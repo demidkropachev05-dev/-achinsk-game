@@ -1692,17 +1692,19 @@ function update(){
 
         /* ходьба */
 
-animateCharacter(
-    walkTime,
-    true
+updateCharacterAnimation(
+    delta,
+    true,
+    false
 );
+        
     }else{
 
-    animateCharacter(
-        walkTime,
-        false
-    );
-}
+    updateCharacterAnimation(
+    delta,
+    false,
+    false
+);
 
 
     /* камера */
