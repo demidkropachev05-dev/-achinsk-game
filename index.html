@@ -1,26 +1,1365 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>АЧИНСК — первая игровая сцена</title>
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width,
+  initial-scale=1,
+  maximum-scale=1,
+  user-scalable=no,
+  viewport-fit=cover"
+>
+
+<title>Ачинск — V2</title>
+
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101820;font-family:Arial,sans-serif;touch-action:none}canvas{display:block;width:100%;height:100%}
-#hud{position:fixed;top:0;left:0;right:0;padding:calc(12px + env(safe-area-inset-top)) 14px 0;pointer-events:none;color:#fff;text-shadow:0 2px 4px #000}#title{font-size:20px;font-weight:800;letter-spacing:1px}#hint{font-size:12px;margin-top:4px;opacity:.9}
-#status{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom));transform:translateX(-50%);padding:8px 12px;border-radius:12px;background:rgba(0,0,0,.45);color:#fff;font-size:12px;pointer-events:none;white-space:nowrap}
-#controls{position:fixed;left:18px;bottom:calc(20px + env(safe-area-inset-bottom));width:150px;height:150px}.btn{position:absolute;width:58px;height:58px;border:1px solid rgba(255,255,255,.35);border-radius:18px;background:rgba(20,25,30,.62);color:#fff;font-size:25px;font-weight:700;box-shadow:0 5px 16px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;user-select:none}.btn:active{background:rgba(255,255,255,.28);transform:scale(.96)}#up{left:46px;top:0}#left{left:0;top:46px}#down{left:46px;top:92px}#right{left:92px;top:46px}
-#look{position:fixed;right:16px;bottom:calc(22px + env(safe-area-inset-bottom));width:112px;height:112px;border-radius:50%;border:1px solid rgba(255,255,255,.22);background:rgba(20,25,30,.26);color:rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;font-size:12px;text-align:center;pointer-events:auto;user-select:none}@media(min-width:800px){#controls,#look{display:none}}
-</style></head><body>
-<div id="hud"><div id="title">АЧИНСК • ПЕРВАЯ ИГРОВАЯ СЦЕНА</div><div id="hint">WASD / стрелки • на телефоне — кнопки и свайп справа</div></div>
-<div id="status">Исследуй город</div><div id="controls"><div class="btn" id="up">▲</div><div class="btn" id="left">◀</div><div class="btn" id="down">▼</div><div class="btn" id="right">▶</div></div><div id="look">СВАЙП<br>КАМЕРЫ</div>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script><script>
-(()=>{const scene=new THREE.Scene();scene.background=new THREE.Color(0x8fb8d8);scene.fog=new THREE.Fog(0x8fb8d8,55,190);const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,500);camera.position.set(0,7,10);const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;document.body.prepend(renderer.domElement);
-scene.add(new THREE.HemisphereLight(0xddeeff,0x486040,2));const sun=new THREE.DirectionalLight(0xffffff,2.5);sun.position.set(-45,80,35);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);scene.add(sun);const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:1});const ground=new THREE.Mesh(new THREE.PlaneGeometry(360,360),mat(0x477348));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
-function box(x,y,z,w,h,d,c){const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(c));m.position.set(x,y+h/2,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m}function road(x,z,w,d){box(x,.015,z,w,.03,d,0x33373a);for(let p=-Math.max(w,d)/2+5;p<Math.max(w,d)/2;p+=10){if(w>d)box(x+p,.035,z,.55,.02,.09,0xe7dfad);else box(x,.035,z,.09,.02,.55,0xe7dfad)}}road(0,0,18,330);road(0,0,330,18);road(-38,-65,12,120);road(45,60,12,120);
-const buildings=[[-31,-31,12,18,10,0xd5c8a9],[-10,-31,13,14,17,0xaaaeb1],[25,-28,18,15,12,0xb8b2a1],[-30,29,15,17,15,0xc8c0aa],[-7,30,12,18,9,0xb7c7cf],[29,28,17,16,20,0xc7b79e],[-67,-15,18,20,8,0xb0b6a8],[65,12,18,20,14,0xb9b0a0],[-64,55,20,18,11,0xc5c7bb],[63,-58,22,19,16,0xa8b6bd]];buildings.forEach(b=>{const[x,z,w,d,h,c]=b;box(x,0,z,w,h,d,c);for(let xx=x-w/2+2;xx<x+w/2-1;xx+=3.2)for(let yy=2.5;yy<h-1;yy+=3.2)box(xx,yy,z-d/2-.018,.95,1.15,.05,0x8ab0bd)});
-box(0,0,-45,22,3,3,0x8d3434);for(let i=0;i<6;i++)box(-8+i*3.2,3,-45,2.1,12+(i%2)*3,2.1,0xc9c1ad);box(0,13,-45,19,4,1.2,0x233d52);
-function tree(x,z,s=1){const t=new THREE.Mesh(new THREE.CylinderGeometry(.28*s,.4*s,3*s,8),mat(0x694a2c));t.position.set(x,1.5*s,z);t.castShadow=true;scene.add(t);const c=new THREE.Mesh(new THREE.SphereGeometry(2.1*s,12,10),mat(0x2d6635));c.position.set(x,4.1*s,z);c.castShadow=true;scene.add(c)}for(let i=0;i<85;i++){const x=(Math.random()-.5)*280,z=(Math.random()-.5)*280;if(Math.abs(x)<12||Math.abs(z)<12)continue;tree(x,z,.65+Math.random()*.55)}
-const player=new THREE.Group();const body=new THREE.Mesh(new THREE.CapsuleGeometry(.65,1.4,6,12),mat(0x234c78));body.position.y=1.25;body.castShadow=true;player.add(body);const head=new THREE.Mesh(new THREE.SphereGeometry(.58,16,12),mat(0xe1b18b));head.position.y=2.65;head.castShadow=true;player.add(head);const hair=new THREE.Mesh(new THREE.SphereGeometry(.6,16,8,0,Math.PI*2,0,Math.PI/2),mat(0x2b211c));hair.position.y=2.82;player.add(hair);player.position.set(0,0,28);scene.add(player);
-const keys={};addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);const map={up:'w',down:'s',left:'a',right:'d'};Object.keys(map).forEach(id=>{const el=document.getElementById(id);el.addEventListener('pointerdown',e=>{e.preventDefault();keys[map[id]]=true});['pointerup','pointercancel','pointerleave'].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();keys[map[id]]=false}))});
-let yaw=0,pitch=.25,dragging=false,lx=0,ly=0;const look=document.getElementById('look');look.addEventListener('pointerdown',e=>{dragging=true;lx=e.clientX;ly=e.clientY;look.setPointerCapture(e.pointerId)});look.addEventListener('pointermove',e=>{if(!dragging)return;yaw-=(e.clientX-lx)*.012;pitch-=(e.clientY-ly)*.008;pitch=Math.max(-.35,Math.min(.65,pitch));lx=e.clientX;ly=e.clientY});look.addEventListener('pointerup',()=>dragging=false);look.addEventListener('pointercancel',()=>dragging=false);
-const status=document.getElementById('status'),clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);let f=(keys.w||keys.arrowup?1:0)-(keys.s||keys.arrowdown?1:0),r=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),len=Math.hypot(f,r)||1;f/=len;r/=len;const speed=10,forward=new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)),right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));player.position.addScaledVector(forward,f*speed*dt);player.position.addScaledVector(right,r*speed*dt);player.position.x=Math.max(-155,Math.min(155,player.position.x));player.position.z=Math.max(-155,Math.min(155,player.position.z));if(f||r){player.rotation.y=Math.atan2(forward.x*f+right.x*r,forward.z*f+right.z*r);status.textContent='Ачинск • исследование города'}else status.textContent='Исследуй город';const target=new THREE.Vector3(player.position.x,1.7,player.position.z),dist=10,cp=new THREE.Vector3(player.position.x-Math.sin(yaw)*dist,player.position.y+5.5+pitch*3,player.position.z-Math.cos(yaw)*dist);camera.position.lerp(cp,1-Math.pow(.001,dt));camera.lookAt(target);renderer.render(scene,camera)}animate();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)})})();
-</script></body></html>
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #80aeca;
+    font-family: Arial, sans-serif;
+    touch-action: none;
+}
+
+canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#ui {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    color: white;
+    text-shadow: 0 2px 5px rgba(0,0,0,.8);
+}
+
+#title {
+    position: absolute;
+    top: max(12px, env(safe-area-inset-top));
+    left: max(15px, env(safe-area-inset-left));
+    font-size: 22px;
+    font-weight: 900;
+}
+
+#status {
+    position: absolute;
+    top: 43px;
+    left: max(15px, env(safe-area-inset-left));
+    font-size: 12px;
+    opacity: .9;
+}
+
+#landscape {
+    position: absolute;
+    top: 12px;
+    right: 15px;
+    padding: 7px 10px;
+    border-radius: 10px;
+    background: rgba(0,0,0,.35);
+    font-size: 11px;
+}
+
+/* Левое управление */
+
+#controls {
+    position: absolute;
+
+    left: max(18px, env(safe-area-inset-left));
+    bottom: max(18px, env(safe-area-inset-bottom));
+
+    width: 185px;
+    height: 150px;
+
+    pointer-events: auto;
+}
+
+.button {
+    position: absolute;
+
+    width: 60px;
+    height: 60px;
+
+    border-radius: 18px;
+
+    border: 1px solid rgba(255,255,255,.3);
+
+    background: rgba(15,22,30,.75);
+
+    color: white;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 25px;
+    font-weight: bold;
+
+    user-select: none;
+
+    box-shadow:
+        0 5px 15px rgba(0,0,0,.35);
+
+    backdrop-filter: blur(5px);
+}
+
+.button:active {
+    transform: scale(.92);
+    background: rgba(50,80,100,.9);
+}
+
+.up {
+    left: 62px;
+    top: 0;
+}
+
+.down {
+    left: 62px;
+    bottom: 0;
+}
+
+.left {
+    left: 0;
+    top: 45px;
+}
+
+.right {
+    right: 0;
+    top: 45px;
+}
+
+/* Правая зона камеры */
+
+#cameraArea {
+    position: absolute;
+
+    right: max(20px, env(safe-area-inset-right));
+    bottom: max(20px, env(safe-area-inset-bottom));
+
+    width: min(24vw, 160px);
+    height: min(24vw, 160px);
+
+    min-width: 90px;
+    min-height: 90px;
+
+    border-radius: 50%;
+
+    background: rgba(0,0,0,.12);
+
+    border: 1px solid rgba(255,255,255,.18);
+
+    pointer-events: auto;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: rgba(255,255,255,.65);
+
+    font-size: 10px;
+    text-align: center;
+}
+
+/* Вертикальный экран */
+
+@media (orientation: portrait) {
+
+    #landscape {
+        background: rgba(160,100,20,.75);
+    }
+
+    #landscape::after {
+        content: " • ПОВЕРНИТЕ ТЕЛЕФОН";
+        color: #ffe08a;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+<div id="ui">
+
+    <div id="title">
+        АЧИНСК
+    </div>
+
+    <div id="status">
+        Исследование города
+    </div>
+
+    <div id="landscape">
+        LANDSCAPE
+    </div>
+
+    <div id="controls">
+
+        <div
+            class="button up"
+            data-key="forward">
+            ▲
+        </div>
+
+        <div
+            class="button left"
+            data-key="left">
+            ◀
+        </div>
+
+        <div
+            class="button right"
+            data-key="right">
+            ▶
+        </div>
+
+        <div
+            class="button down"
+            data-key="back">
+            ▼
+        </div>
+
+    </div>
+
+    <div id="cameraArea">
+        СВАЙП<br>
+        КАМЕРОЙ
+    </div>
+
+</div>
+
+<script>
+
+/* =====================================================
+   ОСНОВА
+===================================================== */
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let W = 0;
+let H = 0;
+let DPR = 1;
+
+function resize() {
+
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+
+    W = window.innerWidth;
+    H = window.innerHeight;
+
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
+
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
+
+    ctx.setTransform(
+        DPR,
+        0,
+        0,
+        DPR,
+        0,
+        0
+    );
+}
+
+window.addEventListener("resize", resize);
+
+window.addEventListener(
+    "orientationchange",
+    () => {
+        setTimeout(resize, 150);
+    }
+);
+
+resize();
+
+
+/* =====================================================
+   УПРАВЛЕНИЕ
+===================================================== */
+
+const input = {
+
+    forward: false,
+    back: false,
+
+    left: false,
+    right: false
+};
+
+document
+.querySelectorAll(".button")
+.forEach(button => {
+
+    const key = button.dataset.key;
+
+    button.addEventListener(
+        "pointerdown",
+        event => {
+
+            event.preventDefault();
+
+            input[key] = true;
+        }
+    );
+
+    button.addEventListener(
+        "pointerup",
+        () => {
+            input[key] = false;
+        }
+    );
+
+    button.addEventListener(
+        "pointercancel",
+        () => {
+            input[key] = false;
+        }
+    );
+
+    button.addEventListener(
+        "pointerleave",
+        () => {
+            input[key] = false;
+        }
+    );
+});
+
+
+/* Клавиатура */
+
+window.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "w" ||
+            event.key === "ArrowUp"
+        ) {
+            input.forward = true;
+        }
+
+        if (
+            event.key === "s" ||
+            event.key === "ArrowDown"
+        ) {
+            input.back = true;
+        }
+
+        if (
+            event.key === "a" ||
+            event.key === "ArrowLeft"
+        ) {
+            input.left = true;
+        }
+
+        if (
+            event.key === "d" ||
+            event.key === "ArrowRight"
+        ) {
+            input.right = true;
+        }
+    }
+);
+
+window.addEventListener(
+    "keyup",
+    event => {
+
+        if (
+            event.key === "w" ||
+            event.key === "ArrowUp"
+        ) {
+            input.forward = false;
+        }
+
+        if (
+            event.key === "s" ||
+            event.key === "ArrowDown"
+        ) {
+            input.back = false;
+        }
+
+        if (
+            event.key === "a" ||
+            event.key === "ArrowLeft"
+        ) {
+            input.left = false;
+        }
+
+        if (
+            event.key === "d" ||
+            event.key === "ArrowRight"
+        ) {
+            input.right = false;
+        }
+    }
+);
+
+
+/* =====================================================
+   КАМЕРА
+===================================================== */
+
+let cameraAngle = 0;
+
+const cameraArea =
+    document.getElementById("cameraArea");
+
+let cameraDragging = false;
+let cameraX = 0;
+
+cameraArea.addEventListener(
+    "pointerdown",
+    event => {
+
+        event.preventDefault();
+
+        cameraDragging = true;
+
+        cameraX = event.clientX;
+
+        cameraArea.setPointerCapture(
+            event.pointerId
+        );
+    }
+);
+
+cameraArea.addEventListener(
+    "pointermove",
+    event => {
+
+        if (!cameraDragging)
+            return;
+
+        const delta =
+            event.clientX - cameraX;
+
+        cameraAngle += delta * 0.012;
+
+        cameraX = event.clientX;
+    }
+);
+
+cameraArea.addEventListener(
+    "pointerup",
+    () => {
+        cameraDragging = false;
+    }
+);
+
+cameraArea.addEventListener(
+    "pointercancel",
+    () => {
+        cameraDragging = false;
+    }
+);
+
+
+/* =====================================================
+   ИГРОВОЙ МИР
+===================================================== */
+
+let player = {
+
+    x: 0,
+    y: 0,
+
+    speed: 4
+};
+
+
+const buildings = [];
+
+const buildingColors = [
+    "#c8b79a",
+    "#b8c2c6",
+    "#d0ad88",
+    "#aeb4b8",
+    "#c7a98e"
+];
+
+
+for (
+    let x = -1000;
+    x <= 1000;
+    x += 220
+) {
+
+    for (
+        let y = -800;
+        y <= 800;
+        y += 220
+    ) {
+
+        buildings.push({
+
+            x:
+                x +
+                (Math.random() - .5) * 50,
+
+            y:
+                y +
+                (Math.random() - .5) * 50,
+
+            width:
+                130 +
+                Math.random() * 90,
+
+            height:
+                110 +
+                Math.random() * 100,
+
+            color:
+                buildingColors[
+                    Math.floor(
+                        Math.random() *
+                        buildingColors.length
+                    )
+                ]
+        });
+    }
+}
+
+
+/* =====================================================
+   ДЕРЕВЬЯ
+===================================================== */
+
+const trees = [];
+
+for (
+    let i = 0;
+    i < 180;
+    i++
+) {
+
+    trees.push({
+
+        x:
+            (Math.random() - .5) *
+            2300,
+
+        y:
+            (Math.random() - .5) *
+            1700,
+
+        size:
+            .7 +
+            Math.random() * .6
+    });
+}
+
+
+/* =====================================================
+   МАШИНЫ
+===================================================== */
+
+const cars = [];
+
+for (
+    let i = 0;
+    i < 18;
+    i++
+) {
+
+    cars.push({
+
+        x:
+            (Math.random() - .5) *
+            1800,
+
+        y:
+            (Math.random() - .5) *
+            1200,
+
+        direction:
+            Math.random() > .5
+                ? 0
+                : Math.PI / 2,
+
+        speed:
+            0.8 +
+            Math.random() * 1.4,
+
+        color:
+            [
+                "#c33",
+                "#e5e5e5",
+                "#222",
+                "#d5a928",
+                "#4c78a8"
+            ][
+                Math.floor(
+                    Math.random() * 5
+                )
+            ]
+    });
+}
+
+
+/* =====================================================
+   МИРОВЫЕ КООРДИНАТЫ
+===================================================== */
+
+function worldToScreen(
+    worldX,
+    worldY
+) {
+
+    const scale =
+        Math.min(W, H) /
+        760;
+
+    let dx =
+        worldX -
+        player.x;
+
+    let dy =
+        worldY -
+        player.y;
+
+
+    const cos =
+        Math.cos(cameraAngle);
+
+    const sin =
+        Math.sin(cameraAngle);
+
+
+    const rotatedX =
+        dx * cos -
+        dy * sin;
+
+    const rotatedY =
+        dx * sin +
+        dy * cos;
+
+
+    return [
+
+        W / 2 +
+        rotatedX *
+        scale,
+
+        H / 2 +
+        rotatedY *
+        scale
+    ];
+}
+
+
+/* =====================================================
+   НЕБО И ЗЕМЛЯ
+===================================================== */
+
+function drawBackground() {
+
+    const gradient =
+        ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            H
+        );
+
+    gradient.addColorStop(
+        0,
+        "#72a9cf"
+    );
+
+    gradient.addColorStop(
+        .55,
+        "#c2d9e4"
+    );
+
+    gradient.addColorStop(
+        .56,
+        "#73995d"
+    );
+
+    gradient.addColorStop(
+        1,
+        "#3d6739"
+    );
+
+    ctx.fillStyle = gradient;
+
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+    );
+}
+
+
+/* =====================================================
+   ДОРОГИ
+===================================================== */
+
+function drawRoads() {
+
+    const scale =
+        Math.min(W, H) /
+        760;
+
+    const cx =
+        W / 2;
+
+    const cy =
+        H / 2;
+
+
+    ctx.save();
+
+    ctx.translate(
+        cx,
+        cy
+    );
+
+    ctx.rotate(
+        cameraAngle
+    );
+
+
+    ctx.fillStyle =
+        "#34383b";
+
+
+    /* главная вертикальная */
+
+    ctx.fillRect(
+        -55 * scale,
+        -H,
+        110 * scale,
+        H * 2
+    );
+
+
+    /* главная горизонтальная */
+
+    ctx.fillRect(
+        -W,
+        -55 * scale,
+        W * 2,
+        110 * scale
+    );
+
+
+    /* разметка */
+
+    ctx.strokeStyle =
+        "#e8dfa9";
+
+    ctx.lineWidth = 3;
+
+    ctx.setLineDash([
+        22,
+        22
+    ]);
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        0,
+        -H
+    );
+
+    ctx.lineTo(
+        0,
+        H
+    );
+
+    ctx.moveTo(
+        -W,
+        0
+    );
+
+    ctx.lineTo(
+        W,
+        0
+    );
+
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    ctx.restore();
+}
+
+
+/* =====================================================
+   ДЕРЕВЬЯ
+===================================================== */
+
+function drawTrees() {
+
+    const scale =
+        Math.min(W, H) /
+        760;
+
+
+    trees.forEach(tree => {
+
+        const [
+            sx,
+            sy
+        ] =
+            worldToScreen(
+                tree.x,
+                tree.y
+            );
+
+
+        if (
+            sx < -50 ||
+            sx > W + 50 ||
+            sy < -70 ||
+            sy > H + 70
+        )
+            return;
+
+
+        const size =
+            tree.size *
+            scale *
+            15;
+
+
+        ctx.fillStyle =
+            "#67462d";
+
+
+        ctx.fillRect(
+            sx - 2 * scale,
+            sy,
+            4 * scale,
+            15 * scale
+        );
+
+
+        ctx.fillStyle =
+            "#276239";
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            sx,
+            sy - 7 * scale,
+            size,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+    });
+}
+
+
+/* =====================================================
+   ЗДАНИЯ
+===================================================== */
+
+function drawBuildings() {
+
+    const scale =
+        Math.min(W, H) /
+        760;
+
+
+    buildings.forEach(
+        building => {
+
+            const [
+                sx,
+                sy
+            ] =
+                worldToScreen(
+                    building.x,
+                    building.y
+                );
+
+
+            const width =
+                building.width *
+                scale;
+
+            const height =
+                building.height *
+                scale;
+
+
+            if (
+                sx + width / 2 < 0 ||
+                sx - width / 2 > W ||
+                sy + height / 2 < 0 ||
+                sy - height / 2 > H
+            )
+                return;
+
+
+            /* тень */
+
+            ctx.fillStyle =
+                "rgba(0,0,0,.25)";
+
+            ctx.fillRect(
+                sx - width / 2 + 9,
+                sy - height / 2 + 11,
+                width,
+                height
+            );
+
+
+            /* здание */
+
+            ctx.fillStyle =
+                building.color;
+
+            ctx.fillRect(
+                sx - width / 2,
+                sy - height / 2,
+                width,
+                height
+            );
+
+
+            /* крыша */
+
+            ctx.fillStyle =
+                "#596064";
+
+            ctx.fillRect(
+                sx - width * .45,
+                sy - height * .47,
+                width * .9,
+                Math.max(
+                    5,
+                    height * .07
+                )
+            );
+
+
+            /* окна */
+
+            for (
+                let wx =
+                    sx -
+                    width * .35;
+
+                wx <
+                    sx +
+                    width * .35;
+
+                wx +=
+                    Math.max(
+                        14,
+                        width * .19
+                    )
+            ) {
+
+                for (
+                    let wy =
+                        sy -
+                        height * .30;
+
+                    wy <
+                        sy +
+                        height * .28;
+
+                    wy +=
+                        Math.max(
+                            15,
+                            height * .20
+                        )
+                ) {
+
+                    ctx.fillStyle =
+                        "#77a8b8";
+
+                    ctx.fillRect(
+                        wx,
+                        wy,
+                        Math.max(
+                            6,
+                            width * .065
+                        ),
+                        Math.max(
+                            7,
+                            height * .075
+                        )
+                    );
+                }
+            }
+        }
+    );
+}
+
+
+/* =====================================================
+   МАШИНЫ
+===================================================== */
+
+function drawCars() {
+
+    const scale =
+        Math.min(W, H) /
+        760;
+
+
+    cars.forEach(car => {
+
+        car.x +=
+            Math.cos(
+                car.direction
+            ) *
+            car.speed;
+
+        car.y +=
+            Math.sin(
+                car.direction
+            ) *
+            car.speed;
+
+
+        if (car.x > 1100)
+            car.x = -1100;
+
+        if (car.x < -1100)
+            car.x = 1100;
+
+
+        const [
+            sx,
+            sy
+        ] =
+            worldToScreen(
+                car.x,
+                car.y
+            );
+
+
+        if (
+            sx < -50 ||
+            sx > W + 50 ||
+            sy < -50 ||
+            sy > H + 50
+        )
+            return;
+
+
+        ctx.save();
+
+        ctx.translate(
+            sx,
+            sy
+        );
+
+        ctx.rotate(
+            car.direction +
+            cameraAngle
+        );
+
+
+        ctx.fillStyle =
+            "rgba(0,0,0,.25)";
+
+        ctx.fillRect(
+            -13 * scale,
+            -7 * scale,
+            28 * scale,
+            15 * scale
+        );
+
+
+        ctx.fillStyle =
+            car.color;
+
+        ctx.fillRect(
+            -14 * scale,
+            -6 * scale,
+            28 * scale,
+            12 * scale
+        );
+
+
+        ctx.fillStyle =
+            "#9ac1cf";
+
+        ctx.fillRect(
+            -5 * scale,
+            -5 * scale,
+            9 * scale,
+            10 * scale
+        );
+
+
+        ctx.restore();
+    });
+}
+
+
+/* =====================================================
+   ПЕРСОНАЖ
+===================================================== */
+
+function drawPlayer() {
+
+    const scale =
+        Math.min(W, H) /
+        760;
+
+
+    const X =
+        W / 2;
+
+    const Y =
+        H / 2;
+
+
+    /* тень */
+
+    ctx.fillStyle =
+        "rgba(0,0,0,.3)";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        X,
+        Y + 25 * scale,
+        19 * scale,
+        8 * scale,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    /* тело */
+
+    ctx.fillStyle =
+        "#234f78";
+
+    ctx.fillRect(
+        X - 14 * scale,
+        Y - 3 * scale,
+        28 * scale,
+        33 * scale
+    );
+
+
+    /* голова */
+
+    ctx.fillStyle =
+        "#e1b18b";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        X,
+        Y - 16 * scale,
+        12 * scale,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    /* волосы */
+
+    ctx.fillStyle =
+        "#28211c";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        X,
+        Y - 21 * scale,
+        12 * scale,
+        Math.PI,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+}
+
+
+/* =====================================================
+   ГОРОДСКАЯ ВЫВЕСКА
+===================================================== */
+
+function drawSign() {
+
+    const [
+        sx,
+        sy
+    ] =
+        worldToScreen(
+            0,
+            -720
+        );
+
+
+    const scale =
+        Math.min(W, H) /
+        760;
+
+
+    if (
+        sy < -100 ||
+        sy > H + 100
+    )
+        return;
+
+
+    ctx.fillStyle =
+        "#8d3434";
+
+    ctx.fillRect(
+        sx - 90 * scale,
+        sy,
+        180 * scale,
+        28 * scale
+    );
+
+
+    ctx.fillStyle =
+        "#fff";
+
+    ctx.font =
+        "bold " +
+        Math.max(
+            13,
+            21 * scale
+        ) +
+        "px Arial";
+
+    ctx.textAlign =
+        "center";
+
+
+    ctx.fillText(
+        "АЧИНСК",
+        sx,
+        sy + 21 * scale
+    );
+}
+
+
+/* =====================================================
+   ИГРОВОЙ ЦИКЛ
+===================================================== */
+
+function update() {
+
+    let forward =
+        (input.forward ? 1 : 0) -
+        (input.back ? 1 : 0);
+
+    let side =
+        (input.right ? 1 : 0) -
+        (input.left ? 1 : 0);
+
+
+    const length =
+        Math.hypot(
+            forward,
+            side
+        );
+
+
+    if (length > 0) {
+
+        forward /=
+            length;
+
+        side /=
+            length;
+
+
+        const cos =
+            Math.cos(
+                cameraAngle
+            );
+
+        const sin =
+            Math.sin(
+                cameraAngle
+            );
+
+
+        player.x +=
+            (
+                sin * forward +
+                cos * side
+            ) *
+            player.speed;
+
+
+        player.y +=
+            (
+                cos * forward -
+                sin * side
+            ) *
+            player.speed;
+    }
+}
+
+
+function render() {
+
+    drawBackground();
+
+    drawRoads();
+
+    drawTrees();
+
+    drawBuildings();
+
+    drawCars();
+
+    drawSign();
+
+    drawPlayer();
+}
+
+
+function gameLoop() {
+
+    update();
+
+    render();
+
+    requestAnimationFrame(
+        gameLoop
+    );
+}
+
+
+gameLoop();
+
+</script>
+
+</body>
+</html>
