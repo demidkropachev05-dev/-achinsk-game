@@ -2,381 +2,251 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width,
-           initial-scale=1,
-           maximum-scale=1,
-           user-scalable=no,
-           viewport-fit=cover">
-
-<title>Ачинск — 3D</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Ачинск 3D</title>
 
 <style>
-
-html,
-body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #87b5d1;
-    touch-action: none;
-    font-family: Arial, sans-serif;
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
 }
 
-canvas {
-    display: block;
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#87b5d1;
+    touch-action:none;
+    font-family:Arial,sans-serif;
 }
 
-#interface {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
+canvas{
+    display:block;
+    width:100%;
+    height:100%;
 }
 
-#title {
-    position: absolute;
-    top: 15px;
-    left: 18px;
-
-    color: white;
-
-    font-size: 22px;
-    font-weight: 900;
-
-    text-shadow:
-        0 2px 5px rgba(0,0,0,.8);
+#ui{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
 }
 
-#subtitle {
-    position: absolute;
-    top: 45px;
-    left: 18px;
-
-    color: white;
-
-    font-size: 12px;
-
-    opacity: .9;
-
-    text-shadow:
-        0 2px 5px rgba(0,0,0,.8);
+#title{
+    position:absolute;
+    top:max(12px,env(safe-area-inset-top));
+    left:max(15px,env(safe-area-inset-left));
+    color:white;
+    font-size:22px;
+    font-weight:900;
+    text-shadow:0 2px 5px #000;
 }
 
-
-/* =========================
-   УПРАВЛЕНИЕ
-========================= */
-
-#movement {
-    position: absolute;
-
-    left:
-        max(18px,
-        env(safe-area-inset-left));
-
-    bottom:
-        max(18px,
-        env(safe-area-inset-bottom));
-
-    width: 190px;
-    height: 150px;
-
-    pointer-events: auto;
+#subtitle{
+    position:absolute;
+    top:43px;
+    left:max(15px,env(safe-area-inset-left));
+    color:white;
+    font-size:12px;
+    text-shadow:0 2px 5px #000;
 }
 
-.control {
-    position: absolute;
-
-    width: 60px;
-    height: 60px;
-
-    border-radius: 18px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    color: white;
-
-    font-size: 25px;
-    font-weight: bold;
-
-    background:
-        rgba(15,20,28,.78);
-
-    border:
-        1px solid
-        rgba(255,255,255,.3);
-
-    box-shadow:
-        0 5px 15px
-        rgba(0,0,0,.35);
-
-    user-select: none;
-
-    pointer-events: auto;
+#controls{
+    position:absolute;
+    left:max(18px,env(safe-area-inset-left));
+    bottom:max(18px,env(safe-area-inset-bottom));
+    width:190px;
+    height:150px;
+    pointer-events:none;
 }
 
-.control:active {
-    transform: scale(.92);
-    background:
-        rgba(40,70,95,.9);
+.button{
+    position:absolute;
+    width:60px;
+    height:60px;
+    border-radius:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-size:25px;
+    font-weight:bold;
+    background:rgba(15,20,28,.78);
+    border:1px solid rgba(255,255,255,.3);
+    box-shadow:0 5px 15px rgba(0,0,0,.4);
+    pointer-events:auto;
+    user-select:none;
 }
 
-
-/* ВПЕРЕД */
-
-#forward {
-    left: 65px;
-    top: 0;
+.button:active{
+    transform:scale(.92);
 }
 
-
-/* НАЗАД */
-
-#back {
-    left: 65px;
-    bottom: 0;
+#forward{
+    left:65px;
+    top:0;
 }
 
-
-/* ВЛЕВО */
-
-#left {
-    left: 0;
-    top: 45px;
+#back{
+    left:65px;
+    bottom:0;
 }
 
-
-/* ВПРАВО */
-
-#right {
-    right: 0;
-    top: 45px;
+#left{
+    left:0;
+    top:45px;
 }
 
-
-/* =========================
-   КАМЕРА
-========================= */
-
-#cameraZone {
-
-    position: absolute;
-
-    right:
-        max(20px,
-        env(safe-area-inset-right));
-
-    bottom:
-        max(20px,
-        env(safe-area-inset-bottom));
-
-    width: 150px;
-    height: 150px;
-
-    border-radius: 50%;
-
-    background:
-        rgba(0,0,0,.10);
-
-    border:
-        1px solid
-        rgba(255,255,255,.18);
-
-    pointer-events: auto;
-
-    color:
-        rgba(255,255,255,.55);
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    text-align: center;
-
-    font-size: 11px;
+#right{
+    right:0;
+    top:45px;
 }
 
-@media (orientation: portrait) {
+#camera{
+    position:absolute;
+    right:max(20px,env(safe-area-inset-right));
+    bottom:max(20px,env(safe-area-inset-bottom));
+    width:150px;
+    height:150px;
+    border-radius:50%;
+    background:rgba(0,0,0,.12);
+    border:1px solid rgba(255,255,255,.2);
+    color:rgba(255,255,255,.65);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-size:11px;
+    pointer-events:auto;
+}
 
-    #subtitle::after {
+#rotate{
+    position:absolute;
+    right:15px;
+    top:15px;
+    color:white;
+    font-size:11px;
+    padding:7px 10px;
+    border-radius:10px;
+    background:rgba(0,0,0,.35);
+}
 
-        content:
-            " • ПОВЕРНИТЕ ТЕЛЕФОН";
-
-        color:
-            #ffe08a;
+@media(orientation:portrait){
+    #rotate::after{
+        content:" • ПОВЕРНИТЕ ТЕЛЕФОН";
+        color:#ffe08a;
     }
-
 }
-
 </style>
 </head>
 
-
 <body>
 
+<div id="ui">
 
-<div id="interface">
+<div id="title">АЧИНСК</div>
 
-    <div id="title">
-        АЧИНСК
-    </div>
+<div id="subtitle">
+3D • первая версия города
+</div>
 
-    <div id="subtitle">
-        3D • первая городская версия
-    </div>
+<div id="rotate">
+LANDSCAPE
+</div>
 
+<div id="controls">
 
-    <div id="movement">
-
-        <div
-            class="control"
-            id="forward">
-            ▲
-        </div>
-
-        <div
-            class="control"
-            id="left">
-            ◀
-        </div>
-
-        <div
-            class="control"
-            id="right">
-            ▶
-        </div>
-
-        <div
-            class="control"
-            id="back">
-            ▼
-        </div>
-
-    </div>
-
-
-    <div id="cameraZone">
-
-        СВАЙП<br>
-        КАМЕРОЙ
-
-    </div>
+<div class="button" id="forward">▲</div>
+<div class="button" id="left">◀</div>
+<div class="button" id="right">▶</div>
+<div class="button" id="back">▼</div>
 
 </div>
 
+<div id="camera">
+СВАЙП<br>КАМЕРОЙ
+</div>
+
+</div>
 
 <script type="module">
 
-import * as THREE
-from
+import * as THREE from
 "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
 
-/* =====================================
+/* ==============================
    СЦЕНА
-===================================== */
+============================== */
 
-const scene =
-    new THREE.Scene();
-
+const scene = new THREE.Scene();
 
 scene.background =
-    new THREE.Color(
-        0x87b5d1
-    );
-
+    new THREE.Color(0x87b5d1);
 
 scene.fog =
     new THREE.Fog(
         0x87b5d1,
-        120,
-        700
+        100,
+        650
     );
 
 
-/* =====================================
+/* ==============================
    КАМЕРА
-===================================== */
+============================== */
 
 const camera =
     new THREE.PerspectiveCamera(
         65,
-        window.innerWidth /
-        window.innerHeight,
-        0.1,
+        innerWidth / innerHeight,
+        .1,
         1200
     );
 
 
-camera.position.set(
-    0,
-    5,
-    10
-);
-
-
-/* =====================================
+/* ==============================
    РЕНДЕР
-===================================== */
+============================== */
 
 const renderer =
     new THREE.WebGLRenderer({
-
-        antialias: true,
-
-        powerPreference:
-            "high-performance"
+        antialias:true,
+        powerPreference:"high-performance"
     });
 
-
 renderer.setPixelRatio(
-    Math.min(
-        window.devicePixelRatio,
-        2
-    )
+    Math.min(devicePixelRatio,2)
 );
-
 
 renderer.setSize(
-    window.innerWidth,
-    window.innerHeight
+    innerWidth,
+    innerHeight
 );
 
-
-renderer.shadowMap.enabled =
-    true;
-
+renderer.shadowMap.enabled = true;
 
 renderer.shadowMap.type =
     THREE.PCFSoftShadowMap;
-
 
 document.body.appendChild(
     renderer.domElement
 );
 
 
-/* =====================================
+/* ==============================
    СВЕТ
-===================================== */
+============================== */
 
-const skyLight =
+const ambient =
     new THREE.HemisphereLight(
-        0xbfdfff,
-        0x435a38,
-        2
+        0xc8e5ff,
+        0x405a35,
+        2.2
     );
 
-
-scene.add(
-    skyLight
-);
+scene.add(ambient);
 
 
 const sun =
@@ -385,46 +255,28 @@ const sun =
         3
     );
 
-
 sun.position.set(
     120,
     180,
-    80
+    100
 );
 
+sun.castShadow = true;
 
-sun.castShadow =
-    true;
+sun.shadow.mapSize.width = 2048;
+sun.shadow.mapSize.height = 2048;
 
+sun.shadow.camera.left = -300;
+sun.shadow.camera.right = 300;
+sun.shadow.camera.top = 300;
+sun.shadow.camera.bottom = -300;
 
-sun.shadow.mapSize.width =
-    2048;
-
-sun.shadow.mapSize.height =
-    2048;
-
-
-sun.shadow.camera.left =
-    -250;
-
-sun.shadow.camera.right =
-    250;
-
-sun.shadow.camera.top =
-    250;
-
-sun.shadow.camera.bottom =
-    -250;
+scene.add(sun);
 
 
-scene.add(
-    sun
-);
-
-
-/* =====================================
+/* ==============================
    ЗЕМЛЯ
-===================================== */
+============================== */
 
 const ground =
     new THREE.Mesh(
@@ -435,38 +287,31 @@ const ground =
         ),
 
         new THREE.MeshStandardMaterial({
-            color:
-                0x537d48
+            color:0x527b48
         })
     );
-
 
 ground.rotation.x =
     -Math.PI / 2;
 
+ground.receiveShadow = true;
 
-ground.receiveShadow =
-    true;
-
-
-scene.add(
-    ground
-);
+scene.add(ground);
 
 
-/* =====================================
+/* ==============================
    ДОРОГИ
-===================================== */
+============================== */
 
-function createRoad(
-    x,
-    z,
+function road(
     width,
     length,
-    rotation = 0
-) {
+    x,
+    z,
+    rotation=0
+){
 
-    const road =
+    const r =
         new THREE.Mesh(
 
             new THREE.BoxGeometry(
@@ -476,120 +321,108 @@ function createRoad(
             ),
 
             new THREE.MeshStandardMaterial({
-                color:
-                    0x333638
+                color:0x303335
             })
         );
 
-
-    road.position.set(
+    r.position.set(
         x,
         .04,
         z
     );
 
-
-    road.rotation.y =
+    r.rotation.y =
         rotation;
 
+    r.receiveShadow = true;
 
-    road.receiveShadow =
-        true;
-
-
-    scene.add(
-        road
-    );
-
-
-    /* разметка */
-
-    for (
-        let i = -length / 2;
-        i < length / 2;
-        i += 12
-    ) {
-
-        const line =
-            new THREE.Mesh(
-
-                new THREE.BoxGeometry(
-                    .25,
-                    .09,
-                    5
-                ),
-
-                new THREE.MeshStandardMaterial({
-                    color:
-                        0xe5d9a0
-                })
-            );
-
-
-        line.position.set(
-            x,
-            .1,
-            z + i
-        );
-
-
-        line.rotation.y =
-            rotation;
-
-
-        scene.add(
-            line
-        );
-    }
+    scene.add(r);
 }
 
 
-createRoad(
+/* центральные улицы */
+
+road(
+    42,
+    1300,
+    0,
+    0
+);
+
+road(
+    42,
+    1300,
     0,
     0,
-    45,
-    1200
+    Math.PI/2
 );
 
 
-createRoad(
+/* дополнительные улицы */
+
+road(
+    25,
+    1000,
+    -190,
+    0
+);
+
+road(
+    25,
+    1000,
+    190,
+    0
+);
+
+road(
+    25,
+    1000,
     0,
+    -190,
+    Math.PI/2
+);
+
+road(
+    25,
+    1000,
     0,
-    45,
-    1200,
-    Math.PI / 2
+    190,
+    Math.PI/2
 );
 
 
-createRoad(
-    -180,
-    0,
-    28,
-    900
-);
-
-
-createRoad(
-    180,
-    0,
-    28,
-    900
-);
-
-
-/* =====================================
+/* ==============================
    ЗДАНИЯ
-===================================== */
+============================== */
 
-function createBuilding(
+const colors = [
+    0xb9a98f,
+    0xc5c8c7,
+    0xaeb7ba,
+    0xc6a17f,
+    0xb6b0a4
+];
+
+
+function building(
     x,
-    z,
-    width,
-    height,
-    depth
-) {
+    z
+){
 
-    const building =
+    const width =
+        48 +
+        Math.random()*28;
+
+    const depth =
+        42 +
+        Math.random()*30;
+
+    const height =
+        16 +
+        Math.random()*45;
+
+
+    const mesh =
         new THREE.Mesh(
 
             new THREE.BoxGeometry(
@@ -600,35 +433,27 @@ function createBuilding(
 
             new THREE.MeshStandardMaterial({
                 color:
-                    new THREE.Color(
-                        Math.random() * .18 +
-                        .58,
-                        Math.random() * .15 +
-                        .55,
-                        Math.random() * .12 +
-                        .48
-                    )
+                    colors[
+                        Math.floor(
+                            Math.random()*
+                            colors.length
+                        )
+                    ]
             })
         );
 
 
-    building.position.set(
+    mesh.position.set(
         x,
-        height / 2,
+        height/2,
         z
     );
 
+    mesh.castShadow = true;
 
-    building.castShadow =
-        true;
+    mesh.receiveShadow = true;
 
-    building.receiveShadow =
-        true;
-
-
-    scene.add(
-        building
-    );
+    scene.add(mesh);
 
 
     /* крыша */
@@ -637,195 +462,145 @@ function createBuilding(
         new THREE.Mesh(
 
             new THREE.BoxGeometry(
-                width + 1,
-                .6,
-                depth + 1
+                width+1,
+                .7,
+                depth+1
             ),
 
             new THREE.MeshStandardMaterial({
-                color:
-                    0x4c5052
+                color:0x4a4e50
             })
         );
 
 
     roof.position.set(
         x,
-        height + .3,
+        height+.35,
         z
     );
 
+    roof.castShadow = true;
 
-    roof.castShadow =
-        true;
-
-
-    scene.add(
-        roof
-    );
+    scene.add(roof);
 }
 
 
-/* городская сетка */
+/* создаём кварталы */
 
-for (
-    let x = -450;
-    x <= 450;
-    x += 90
-) {
+for(
+    let x=-480;
+    x<=480;
+    x+=90
+){
 
-    for (
-        let z = -450;
-        z <= 450;
-        z += 90
-    ) {
+    for(
+        let z=-480;
+        z<=480;
+        z+=90
+    ){
 
-        if (
-            Math.abs(x) < 65 ||
-            Math.abs(z) < 65
-        ) {
+        if(
+            Math.abs(x)<65 ||
+            Math.abs(z)<65
+        )
             continue;
-        }
 
-
-        createBuilding(
-
-            x +
-            (Math.random() - .5) * 20,
-
-            z +
-            (Math.random() - .5) * 20,
-
-            55 +
-            Math.random() * 25,
-
-            15 +
-            Math.random() * 35,
-
-            45 +
-            Math.random() * 25
-
+        building(
+            x+(Math.random()-.5)*18,
+            z+(Math.random()-.5)*18
         );
     }
 }
 
 
-/* =====================================
+/* ==============================
    ДЕРЕВЬЯ
-===================================== */
+============================== */
 
-function createTree(
-    x,
-    z
-) {
+function tree(x,z){
 
     const trunk =
         new THREE.Mesh(
 
             new THREE.CylinderGeometry(
-                .7,
-                1,
-                7,
+                .6,
+                .9,
+                6,
                 8
             ),
 
             new THREE.MeshStandardMaterial({
-                color:
-                    0x69452b
+                color:0x664329
             })
         );
 
-
     trunk.position.set(
         x,
-        3.5,
+        3,
         z
     );
 
+    trunk.castShadow=true;
 
-    trunk.castShadow =
-        true;
-
-
-    scene.add(
-        trunk
-    );
+    scene.add(trunk);
 
 
     const crown =
         new THREE.Mesh(
 
             new THREE.SphereGeometry(
-                5,
+                4.5,
                 12,
                 10
             ),
 
             new THREE.MeshStandardMaterial({
-                color:
-                    0x28623a
+                color:0x28623b
             })
         );
 
-
     crown.position.set(
         x,
-        9,
+        8,
         z
     );
 
+    crown.castShadow=true;
 
-    crown.castShadow =
-        true;
-
-
-    scene.add(
-        crown
-    );
+    scene.add(crown);
 }
 
 
-for (
-    let i = 0;
-    i < 100;
+for(
+    let i=0;
+    i<120;
     i++
-) {
+){
 
     const x =
-        (Math.random() - .5) *
-        1100;
+        (Math.random()-.5)*1100;
 
     const z =
-        (Math.random() - .5) *
-        1100;
+        (Math.random()-.5)*1100;
 
-
-    if (
-        Math.abs(x) < 45 &&
-        Math.abs(z) < 45
-    ) {
+    if(
+        Math.abs(x)<55 &&
+        Math.abs(z)<55
+    )
         continue;
-    }
 
-
-    createTree(
-        x,
-        z
-    );
+    tree(x,z);
 }
 
 
-/* =====================================
+/* ==============================
    ПЕРСОНАЖ
-===================================== */
+============================== */
 
 const player =
     new THREE.Group();
 
-
-scene.add(
-    player
-);
+scene.add(player);
 
 
 /* тело */
@@ -835,29 +610,21 @@ const body =
 
         new THREE.CapsuleGeometry(
             .7,
-            1.8,
+            1.7,
             5,
-            10
+            12
         ),
 
         new THREE.MeshStandardMaterial({
-            color:
-                0x24517b
+            color:0x24547d
         })
     );
 
+body.position.y=1.7;
 
-body.position.y =
-    1.7;
+body.castShadow=true;
 
-
-body.castShadow =
-    true;
-
-
-player.add(
-    body
-);
+player.add(body);
 
 
 /* голова */
@@ -867,28 +634,20 @@ const head =
 
         new THREE.SphereGeometry(
             .55,
-            16,
-            16
+            18,
+            18
         ),
 
         new THREE.MeshStandardMaterial({
-            color:
-                0xe1b18b
+            color:0xe0ad85
         })
     );
 
+head.position.y=3.15;
 
-head.position.y =
-    3.25;
+head.castShadow=true;
 
-
-head.castShadow =
-    true;
-
-
-player.add(
-    head
-);
+player.add(head);
 
 
 /* волосы */
@@ -898,228 +657,132 @@ const hair =
 
         new THREE.SphereGeometry(
             .57,
-            16,
-            8,
+            18,
+            9,
             0,
-            Math.PI * 2,
+            Math.PI*2,
             0,
-            Math.PI / 2
+            Math.PI/2
         ),
 
         new THREE.MeshStandardMaterial({
-            color:
-                0x241d19
+            color:0x211c19
         })
     );
 
+hair.position.y=3.42;
 
-hair.position.y =
-    3.5;
-
-
-player.add(
-    hair
-);
+player.add(hair);
 
 
-/* =====================================
+/* ==============================
    УПРАВЛЕНИЕ
-===================================== */
+============================== */
 
-const keys = {
-
-    forward: false,
-    back: false,
-    left: false,
-    right: false
+const controls = {
+    forward:false,
+    back:false,
+    left:false,
+    right:false
 };
 
 
-function bindButton(
+function bind(
     id,
-    key
-) {
+    name
+){
 
-    const button =
+    const element =
         document.getElementById(id);
 
-
-    button.addEventListener(
+    element.addEventListener(
         "pointerdown",
-        event => {
-
-            event.preventDefault();
-
-            keys[key] =
-                true;
+        e=>{
+            e.preventDefault();
+            controls[name]=true;
         }
     );
 
+    const release=()=>{
+        controls[name]=false;
+    };
 
-    const release =
-        () => {
-
-            keys[key] =
-                false;
-        };
-
-
-    button.addEventListener(
+    element.addEventListener(
         "pointerup",
         release
     );
 
-    button.addEventListener(
+    element.addEventListener(
         "pointercancel",
         release
     );
 
-    button.addEventListener(
+    element.addEventListener(
         "pointerleave",
         release
     );
 }
 
 
-/* правильное направление */
-
-bindButton(
+bind(
     "forward",
     "forward"
 );
 
-bindButton(
+bind(
     "back",
     "back"
 );
 
-bindButton(
+bind(
     "left",
     "left"
 );
 
-bindButton(
+bind(
     "right",
     "right"
 );
 
 
-/* =====================================
-   КЛАВИАТУРА
-===================================== */
-
-window.addEventListener(
-    "keydown",
-    event => {
-
-        if (
-            event.key === "w" ||
-            event.key === "ArrowUp"
-        )
-            keys.forward = true;
-
-
-        if (
-            event.key === "s" ||
-            event.key === "ArrowDown"
-        )
-            keys.back = true;
-
-
-        if (
-            event.key === "a" ||
-            event.key === "ArrowLeft"
-        )
-            keys.left = true;
-
-
-        if (
-            event.key === "d" ||
-            event.key === "ArrowRight"
-        )
-            keys.right = true;
-    }
-);
-
-
-window.addEventListener(
-    "keyup",
-    event => {
-
-        if (
-            event.key === "w" ||
-            event.key === "ArrowUp"
-        )
-            keys.forward = false;
-
-
-        if (
-            event.key === "s" ||
-            event.key === "ArrowDown"
-        )
-            keys.back = false;
-
-
-        if (
-            event.key === "a" ||
-            event.key === "ArrowLeft"
-        )
-            keys.left = false;
-
-
-        if (
-            event.key === "d" ||
-            event.key === "ArrowRight"
-        )
-            keys.right = false;
-    }
-);
-
-
-/* =====================================
+/* ==============================
    КАМЕРА
-===================================== */
+============================== */
 
-let cameraYaw = 0;
+let yaw=0;
 
-let cameraPitch = .45;
+let pitch=.4;
 
-let cameraDistance = 10;
+let distance=10;
 
 
 const cameraZone =
     document.getElementById(
-        "cameraZone"
+        "camera"
     );
 
 
-let dragging =
-    false;
+let dragging=false;
 
-let lastX =
-    0;
+let lastX=0;
 
-let lastY =
-    0;
+let lastY=0;
 
 
 cameraZone.addEventListener(
     "pointerdown",
-    event => {
+    e=>{
 
-        event.preventDefault();
+        e.preventDefault();
 
-        dragging =
-            true;
+        dragging=true;
 
-        lastX =
-            event.clientX;
+        lastX=e.clientX;
 
-        lastY =
-            event.clientY;
+        lastY=e.clientY;
 
         cameraZone.setPointerCapture(
-            event.pointerId
+            e.pointerId
         );
     }
 );
@@ -1127,76 +790,61 @@ cameraZone.addEventListener(
 
 cameraZone.addEventListener(
     "pointermove",
-    event => {
+    e=>{
 
-        if (!dragging)
+        if(!dragging)
             return;
 
-
         const dx =
-            event.clientX -
-            lastX;
-
+            e.clientX-lastX;
 
         const dy =
-            event.clientY -
-            lastY;
+            e.clientY-lastY;
 
+        yaw -=
+            dx*.008;
 
-        cameraYaw -=
-            dx * .008;
+        pitch +=
+            dy*.006;
 
-
-        cameraPitch +=
-            dy * .006;
-
-
-        cameraPitch =
+        pitch =
             THREE.MathUtils.clamp(
-                cameraPitch,
-                .15,
+                pitch,
+                .12,
                 1.1
             );
 
+        lastX=e.clientX;
 
-        lastX =
-            event.clientX;
-
-        lastY =
-            event.clientY;
+        lastY=e.clientY;
     }
 );
 
 
 cameraZone.addEventListener(
     "pointerup",
-    () => {
-
-        dragging =
-            false;
+    ()=>{
+        dragging=false;
     }
 );
-
 
 cameraZone.addEventListener(
     "pointercancel",
-    () => {
-
-        dragging =
-            false;
+    ()=>{
+        dragging=false;
     }
 );
 
 
-/* =====================================
-   ИГРОВОЙ ЦИКЛ
-===================================== */
+/* ==============================
+   ДВИЖЕНИЕ
+============================== */
 
 const clock =
     new THREE.Clock();
 
 
-function update() {
+function update(){
 
     const delta =
         Math.min(
@@ -1206,119 +854,102 @@ function update() {
 
 
     let forward =
-        (keys.forward ? 1 : 0) -
-        (keys.back ? 1 : 0);
-
+        (controls.forward?1:0) -
+        (controls.back?1:0);
 
     let side =
-        (keys.right ? 1 : 0) -
-        (keys.left ? 1 : 0);
+        (controls.right?1:0) -
+        (controls.left?1:0);
 
 
-    const length =
+    const len =
         Math.hypot(
             forward,
             side
         );
 
 
-    if (length > 0) {
+    if(len>0){
 
-        forward /=
-            length;
-
-        side /=
-            length;
+        forward/=len;
+        side/=len;
 
 
         const speed =
-            22 * delta;
+            22*delta;
 
 
-        const angle =
-            cameraYaw;
+        const sin =
+            Math.sin(yaw);
+
+        const cos =
+            Math.cos(yaw);
 
 
-        const dirX =
-            Math.sin(angle) *
-            forward;
+        const moveX =
+            sin*forward +
+            cos*side;
 
 
-        const dirZ =
-            Math.cos(angle) *
-            forward;
-
-
-        const sideX =
-            Math.cos(angle) *
-            side;
-
-
-        const sideZ =
-            -Math.sin(angle) *
-            side;
+        const moveZ =
+            cos*forward -
+            sin*side;
 
 
         player.position.x +=
-            (dirX + sideX) *
-            speed;
-
+            moveX*speed;
 
         player.position.z +=
-            (dirZ + sideZ) *
-            speed;
+            moveZ*speed;
 
 
         player.rotation.y =
             Math.atan2(
-                dirX + sideX,
-                dirZ + sideZ
+                moveX,
+                moveZ
             );
     }
 
 
-    /* камера */
+    /* ==========================
+       КАМЕРА
+    ========================== */
 
     const horizontal =
-        Math.cos(
-            cameraPitch
-        ) *
-        cameraDistance;
-
+        Math.cos(pitch)*
+        distance;
 
     const vertical =
-        Math.sin(
-            cameraPitch
-        ) *
-        cameraDistance;
+        Math.sin(pitch)*
+        distance;
 
 
     const target =
         new THREE.Vector3(
             player.position.x,
-            player.position.y + 2,
+            2.2,
             player.position.z
         );
 
 
-    const cameraPosition =
+    const wanted =
         new THREE.Vector3(
 
             player.position.x -
-            Math.sin(cameraYaw) *
+            Math.sin(yaw)*
             horizontal,
 
-            player.position.y +
+            player.position.y+
             vertical,
 
             player.position.z -
-            Math.cos(cameraYaw) *
+            Math.cos(yaw)*
             horizontal
         );
 
 
     camera.position.lerp(
-        cameraPosition,
+        wanted,
         .12
     );
 
@@ -1329,19 +960,17 @@ function update() {
 }
 
 
-/* =====================================
-   RENDER
-===================================== */
+/* ==============================
+   ЗАПУСК
+============================== */
 
-function animate() {
+function animate(){
 
     requestAnimationFrame(
         animate
     );
 
-
     update();
-
 
     renderer.render(
         scene,
@@ -1353,25 +982,22 @@ function animate() {
 animate();
 
 
-/* =====================================
+/* ==============================
    RESIZE
-===================================== */
+============================== */
 
 window.addEventListener(
     "resize",
-    () => {
-
+    ()=>{
         camera.aspect =
-            window.innerWidth /
-            window.innerHeight;
-
+            innerWidth/
+            innerHeight;
 
         camera.updateProjectionMatrix();
 
-
         renderer.setSize(
-            window.innerWidth,
-            window.innerHeight
+            innerWidth,
+            innerHeight
         );
     }
 );
