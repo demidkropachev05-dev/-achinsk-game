@@ -2396,54 +2396,39 @@ function updatePlayer(
     */
 
 
-    let forward=
-    -joystickY;
+    let forward = -joystickY;
+let side = joystickX;
 
 
-    let side=
-    -joystickX;
+/* клавиатура */
 
+if(
+    keys["KeyW"] ||
+    keys["ArrowUp"]
+){
+    forward = 1;
+}
 
-    /* клавиатура */
+if(
+    keys["KeyS"] ||
+    keys["ArrowDown"]
+){
+    forward = -1;
+}
 
-    if(
-        keys["KeyW"] ||
-        keys["ArrowUp"]
-    ){
+if(
+    keys["KeyA"] ||
+    keys["ArrowLeft"]
+){
+    side = -1;
+}
 
-        forward=1;
-
-    }
-
-
-    if(
-        keys["KeyS"] ||
-        keys["ArrowDown"]
-    ){
-
-        forward=-1;
-
-    }
-
-
-    if(
-        keys["KeyA"] ||
-        keys["ArrowLeft"]
-    ){
-
-        side=1;
-
-    }
-
-
-    if(
-        keys["KeyD"] ||
-        keys["ArrowRight"]
-    ){
-
-        side=-1;
-
-    }
+if(
+    keys["KeyD"] ||
+    keys["ArrowRight"]
+){
+    side = 1;
+}
 
 
     /*
