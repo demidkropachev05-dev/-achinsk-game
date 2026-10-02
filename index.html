@@ -1090,1041 +1090,275 @@ for(
 
 
 /* =====================================================
-   ПЕРСОНАЖ — НОВАЯ 3D МОДЕЛЬ
+   REAL HUMAN PLAYER — GLB CHARACTER
 ===================================================== */
 
 const player = new THREE.Group();
 scene.add(player);
 
+player.position.set(0, 0, 80);
 
-/* =====================================================
-   МАТЕРИАЛЫ ПЕРСОНАЖА
-===================================================== */
+/* модель */
+let characterModel = null;
 
-const skinMaterial =
-    new THREE.MeshStandardMaterial({
-        color:0xc98262,
-        roughness:.72,
-        metalness:0
-    });
+/* анимация */
+let characterMixer = null;
+let idleAction = null;
+let walkAction = null;
+let runAction = null;
+let activeAction = null;
 
-const skinLightMaterial =
-    new THREE.MeshStandardMaterial({
-        color:0xd89472,
-        roughness:.7,
-        metalness:0
-    });
+/* загрузчик */
+const characterLoader = new GLTFLoader();
 
-const hairMaterial =
-    new THREE.MeshStandardMaterial({
-        color:0x171311,
-        roughness:.88
-    });
+/*
+   Реальный humanoid персонаж.
+   GLB содержит:
+   - тело
+   - скелет
+   - материалы
+   - текстуры
+   - idle
+   - walk
+   - run
+*/
+characterLoader.load(
+    "https://raw.githubusercontent.com/MMWilliams/char-kit/master/characters/mh_3183.glb",
 
-const shirtMaterial =
-    new THREE.MeshStandardMaterial({
-        color:0x202936,
-        roughness:.82
-    });
+    function(gltf){
 
-const jacketMaterial =
-    new THREE.MeshStandardMaterial({
-        color:0x303d4c,
-        roughness:.76
-    });
+        characterModel = gltf.scene;
 
-const pantsMaterial =
-    new THREE.MeshStandardMaterial({
-        color:0x161b22,
-        roughness:.9
-    });
+        /* -------------------------
+           НАСТРОЙКА МОДЕЛИ
+        ------------------------- */
 
-const shoeMaterial =
-    new THREE.MeshStandardMaterial({
-        color:0x111315,
-        roughness:.62,
-        metalness:.08
-    });
+        characterModel.position.set(0, 0, 0);
 
-const eyeWhiteMaterial =
-    new THREE.MeshStandardMaterial({
-        color:0xf2eee8,
-        roughness:.5
-    });
+        /*
+           Персонажи char-kit имеют
+           метровую систему координат.
+        */
+        characterModel.scale.setScalar(1.0);
 
-const eyeMaterial =
-    new THREE.MeshStandardMaterial({
-        color:0x16110d,
-        roughness:.35
-    });
+        characterModel.traverse(function(object){
 
-const mouthMaterial =
-    new THREE.MeshStandardMaterial({
-        color:0x55251f,
-        roughness:.8
-    });
+            if(object.isMesh){
 
+                object.castShadow = true;
+                object.receiveShadow = true;
 
-/* =====================================================
-   ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-===================================================== */
+                /*
+                   На мобильном браузере
+                   сохраняем нормальную
+                   производительность.
+                */
+                if(object.material){
 
-function addMesh(
-    geometry,
-    material,
-    position,
-    scale=null
-){
+                    object.material.needsUpdate = true;
 
-    const mesh =
-        new THREE.Mesh(
-            geometry,
-            material
-        );
+                    if("roughness" in object.material){
+                        object.material.roughness = 0.78;
+                    }
 
-    mesh.position.set(
-        position.x,
-        position.y,
-        position.z
-    );
+                    if("metalness" in object.material){
+                        object.material.metalness = 0.02;
+                    }
+                }
+            }
+        });
 
-    if(scale){
-        mesh.scale.set(
-            scale.x,
-            scale.y,
-            scale.z
-        );
-    }
+        player.add(characterModel);
 
-    mesh.castShadow=true;
-    mesh.receiveShadow=true;
+        /* -------------------------
+           ANIMATION MIXER
+        ------------------------- */
 
-    player.add(mesh);
+        characterMixer =
+            new THREE.AnimationMixer(characterModel);
 
-    return mesh;
-}
+        /*
+           Ищем анимации независимо
+           от регистра имени.
+        */
+        function findAnimation(names){
 
+            for(const name of names){
 
-/* =====================================================
-   ТАЗ
-===================================================== */
+                const clip =
+                    gltf.animations.find(
+                        animation =>
+                            animation.name.toLowerCase() ===
+                            name.toLowerCase()
+                    );
 
-const pelvis =
-    addMesh(
+                if(clip){
+                    return clip;
+                }
+            }
 
-        new THREE.CapsuleGeometry(
-            .43,
-            .42,
-            8,
-            16
-        ),
-
-        pantsMaterial,
-
-        {
-            x:0,
-            y:1.42,
-            z:0
-        },
-
-        {
-            x:1.15,
-            y:.9,
-            z:.82
+            return null;
         }
-    );
 
+        const idleClip =
+            findAnimation([
+                "idle",
+                "Idle"
+            ]);
 
-/* =====================================================
-   ТУЛОВИЩЕ
-===================================================== */
+        const walkClip =
+            findAnimation([
+                "walk",
+                "walking",
+                "Walk",
+                "Walking"
+            ]);
 
-const torso =
-    addMesh(
+        const runClip =
+            findAnimation([
+                "run",
+                "running",
+                "Run",
+                "Running"
+            ]);
 
-        new THREE.CapsuleGeometry(
-            .55,
-            .95,
-            10,
-            20
-        ),
+        if(idleClip){
+            idleAction =
+                characterMixer.clipAction(idleClip);
 
-        jacketMaterial,
+            idleAction.loop =
+                THREE.LoopRepeat;
 
-        {
-            x:0,
-            y:2.18,
-            z:0
-        },
+            idleAction.play();
 
-        {
-            x:1.02,
-            y:1,
-            z:.66
+            activeAction =
+                idleAction;
         }
-    );
 
+        if(walkClip){
 
-/* грудь */
+            walkAction =
+                characterMixer.clipAction(walkClip);
 
-const chest =
-    addMesh(
-
-        new THREE.SphereGeometry(
-            1,
-            20,
-            16
-        ),
-
-        shirtMaterial,
-
-        {
-            x:0,
-            y:2.28,
-            z:-.02
-        },
-
-        {
-            x:.53,
-            y:.56,
-            z:.34
+            walkAction.loop =
+                THREE.LoopRepeat;
         }
-    );
 
+        if(runClip){
 
-/* =====================================================
-   ШЕЯ
-===================================================== */
+            runAction =
+                characterMixer.clipAction(runClip);
 
-const neck =
-    addMesh(
-
-        new THREE.CylinderGeometry(
-            .19,
-            .22,
-            .38,
-            16
-        ),
-
-        skinMaterial,
-
-        {
-            x:0,
-            y:2.91,
-            z:0
+            runAction.loop =
+                THREE.LoopRepeat;
         }
-    );
 
-
-/* =====================================================
-   ГОЛОВА
-===================================================== */
-
-const headGroup =
-    new THREE.Group();
-
-headGroup.position.set(
-    0,
-    3.48,
-    0
-);
-
-player.add(
-    headGroup
-);
-
-
-/* основа головы */
-
-const head =
-    new THREE.Mesh(
-
-        new THREE.SphereGeometry(
-            .5,
-            32,
-            24
-        ),
-
-        skinMaterial
-    );
-
-head.scale.set(
-    .91,
-    1.08,
-    .88
-);
-
-head.castShadow=true;
-head.receiveShadow=true;
-
-headGroup.add(
-    head
-);
-
-
-/* =====================================================
-   УШИ
-===================================================== */
-
-function createEar(x){
-
-    const ear =
-        new THREE.Mesh(
-
-            new THREE.SphereGeometry(
-                .16,
-                16,
-                12
-            ),
-
-            skinMaterial
+        console.log(
+            "ЧЕЛОВЕК ЗАГРУЖЕН",
+            gltf.animations.map(a => a.name)
         );
 
-    ear.position.set(
-        x,
-        -.01,
-        0
-    );
-
-    ear.scale.set(
-        .48,
-        1,
-        .72
-    );
-
-    ear.castShadow=true;
-
-    headGroup.add(
-        ear
-    );
-
-    return ear;
-}
-
-createEar(-.46);
-createEar(.46);
-
-
-/* =====================================================
-   ВОЛОСЫ
-===================================================== */
-
-const hairTop =
-    new THREE.Mesh(
-
-        new THREE.SphereGeometry(
-            .52,
-            32,
-            20,
-            0,
-            Math.PI*2,
-            0,
-            Math.PI*.58
-        ),
-
-        hairMaterial
-    );
-
-hairTop.position.y =
-    .17;
-
-hairTop.scale.set(
-    .97,
-    .88,
-    .94
-);
-
-hairTop.castShadow=true;
-
-headGroup.add(
-    hairTop
-);
-
-
-/* боковые волосы */
-
-for(
-    const x of [-.39,.39]
-){
-
-    const sideHair =
-        new THREE.Mesh(
-
-            new THREE.BoxGeometry(
-                .15,
-                .38,
-                .48
-            ),
-
-            hairMaterial
+        console.log(
+            "Idle:",
+            !!idleClip,
+            "Walk:",
+            !!walkClip,
+            "Run:",
+            !!runClip
         );
-
-    sideHair.position.set(
-        x,
-        .03,
-        .02
-    );
-
-    sideHair.castShadow=true;
-
-    headGroup.add(
-        sideHair
-    );
-}
-
-
-/* =====================================================
-   БРОВИ
-===================================================== */
-
-function createBrow(x){
-
-    const brow =
-        new THREE.Mesh(
-
-            new THREE.BoxGeometry(
-                .22,
-                .055,
-                .055
-            ),
-
-            hairMaterial
-        );
-
-    brow.position.set(
-        x,
-        .105,
-        -.445
-    );
-
-    brow.rotation.z =
-        x<0 ? -.08 : .08;
-
-    headGroup.add(
-        brow
-    );
-}
-
-createBrow(-.17);
-createBrow(.17);
-
-
-/* =====================================================
-   ГЛАЗА
-===================================================== */
-
-function createEye(x){
-
-    const eyeGroup =
-        new THREE.Group();
-
-    eyeGroup.position.set(
-        x,
-        .0,
-        -.425
-    );
-
-    headGroup.add(
-        eyeGroup
-    );
-
-
-    const white =
-        new THREE.Mesh(
-
-            new THREE.SphereGeometry(
-                .105,
-                16,
-                12
-            ),
-
-            eyeWhiteMaterial
-        );
-
-    white.scale.set(
-        1,
-        .68,
-        .48
-    );
-
-    eyeGroup.add(
-        white
-    );
-
-
-    const pupil =
-        new THREE.Mesh(
-
-            new THREE.SphereGeometry(
-                .052,
-                12,
-                10
-            ),
-
-            eyeMaterial
-        );
-
-    pupil.position.z =
-        -.048;
-
-    eyeGroup.add(
-        pupil
-    );
-}
-
-createEye(-.17);
-createEye(.17);
-
-
-/* =====================================================
-   НОС
-===================================================== */
-
-const nose =
-    new THREE.Mesh(
-
-        new THREE.CapsuleGeometry(
-            .075,
-            .22,
-            5,
-            10
-        ),
-
-        skinLightMaterial
-    );
-
-nose.position.set(
-    0,
-    -.04,
-    -.46
-);
-
-nose.rotation.x =
-    Math.PI/2;
-
-nose.castShadow=true;
-
-headGroup.add(
-    nose
-);
-
-
-/* кончик носа */
-
-const noseTip =
-    new THREE.Mesh(
-
-        new THREE.SphereGeometry(
-            .09,
-            12,
-            10
-        ),
-
-        skinLightMaterial
-    );
-
-noseTip.position.set(
-    0,
-    -.13,
-    -.47
-);
-
-headGroup.add(
-    noseTip
-);
-
-
-/* =====================================================
-   РОТ
-===================================================== */
-
-const mouth =
-    new THREE.Mesh(
-
-        new THREE.BoxGeometry(
-            .22,
-            .045,
-            .025
-        ),
-
-        mouthMaterial
-    );
-
-mouth.position.set(
-    0,
-    -.29,
-    -.44
-);
-
-headGroup.add(
-    mouth
-);
-
-
-/* подбородок */
-
-const chin =
-    new THREE.Mesh(
-
-        new THREE.SphereGeometry(
-            .19,
-            16,
-            12
-        ),
-
-        skinMaterial
-    );
-
-chin.position.set(
-    0,
-    -.27,
-    -.35
-);
-
-chin.scale.set(
-    1,
-    .55,
-    .65
-);
-
-headGroup.add(
-    chin
-);
-
-
-/* =====================================================
-   РУКИ
-===================================================== */
-
-function createArm(side){
-
-    const upper =
-        new THREE.Group();
-
-    upper.position.set(
-        side*.64,
-        2.48,
-        0
-    );
-
-    player.add(
-        upper
-    );
-
-
-    const shoulder =
-        new THREE.Mesh(
-
-            new THREE.SphereGeometry(
-                .27,
-                20,
-                16
-            ),
-
-            jacketMaterial
-        );
-
-    shoulder.position.y =
-        .02;
-
-    shoulder.scale.set(
-        .9,
-        1,
-        .85
-    );
-
-    shoulder.castShadow=true;
-
-    upper.add(
-        shoulder
-    );
-
-
-    const upperArm =
-        new THREE.Mesh(
-
-            new THREE.CapsuleGeometry(
-                .17,
-                .55,
-                7,
-                14
-            ),
-
-            jacketMaterial
-        );
-
-    upperArm.position.y =
-        -.34;
-
-    upperArm.castShadow=true;
-
-    upper.add(
-        upperArm
-    );
-
-
-    const elbow =
-        new THREE.Group();
-
-    elbow.position.y =
-        -.68;
-
-    upper.add(
-        elbow
-    );
-
-
-    const forearm =
-        new THREE.Mesh(
-
-            new THREE.CapsuleGeometry(
-                .145,
-                .52,
-                7,
-                14
-            ),
-
-            jacketMaterial
-        );
-
-    forearm.position.y =
-        -.29;
-
-    forearm.castShadow=true;
-
-    elbow.add(
-        forearm
-    );
-
-
-    const hand =
-        new THREE.Mesh(
-
-            new THREE.SphereGeometry(
-                .16,
-                16,
-                12
-            ),
-
-            skinMaterial
-        );
-
-    hand.position.y =
-        -.63;
-
-    hand.scale.set(
-        .85,
-        1.15,
-        .8
-    );
-
-    hand.castShadow=true;
-
-    elbow.add(
-        hand
-    );
-
-
-    return {
-        upper,
-        elbow
-    };
-}
-
-
-const leftArm =
-    createArm(-1);
-
-const rightArm =
-    createArm(1);
-
-
-/* =====================================================
-   НОГИ
-===================================================== */
-
-function createLeg(side){
-
-    const hip =
-        new THREE.Group();
-
-    hip.position.set(
-        side*.27,
-        1.36,
-        0
-    );
-
-    player.add(
-        hip
-    );
-
-
-    const thigh =
-        new THREE.Mesh(
-
-            new THREE.CapsuleGeometry(
-                .22,
-                .66,
-                8,
-                14
-            ),
-
-            pantsMaterial
-        );
-
-    thigh.position.y =
-        -.42;
-
-    thigh.castShadow=true;
-
-    hip.add(
-        thigh
-    );
-
-
-    const knee =
-        new THREE.Group();
-
-    knee.position.y =
-        -.86;
-
-    hip.add(
-        knee
-    );
-
-
-    const shin =
-        new THREE.Mesh(
-
-            new THREE.CapsuleGeometry(
-                .17,
-                .67,
-                8,
-                14
-            ),
-
-            pantsMaterial
-        );
-
-    shin.position.y =
-        -.4;
-
-    shin.castShadow=true;
-
-    knee.add(
-        shin
-    );
-
-
-    const ankle =
-        new THREE.Group();
-
-    ankle.position.y =
-        -.82;
-
-    knee.add(
-        ankle
-    );
-
-
-    const shoe =
-        new THREE.Mesh(
-
-            new THREE.BoxGeometry(
-                .38,
-                .25,
-                .72
-            ),
-
-            shoeMaterial
-        );
-
-    shoe.position.set(
-        0,
-        -.13,
-        -.11
-    );
-
-    shoe.scale.set(
-        1,
-        1,
-        1.15
-    );
-
-    shoe.castShadow=true;
-
-    ankle.add(
-        shoe
-    );
-
-
-    return {
-        hip,
-        knee,
-        ankle
-    };
-}
-
-
-const leftLeg =
-    createLeg(-1);
-
-const rightLeg =
-    createLeg(1);
-
-
-/* =====================================================
-   ПАЛЬЦЫ — УПРОЩЁННЫЕ
-===================================================== */
-
-function addFingers(
-    arm,
-    side
-){
-
-    for(
-        let i=0;
-        i<4;
-        i++
-    ){
-
-        const finger =
-            new THREE.Mesh(
-
-                new THREE.CapsuleGeometry(
-                    .025,
-                    .095,
-                    4,
-                    7
-                ),
-
-                skinMaterial
+    },
+
+    function(progress){
+
+        if(progress.total){
+
+            console.log(
+                "Загрузка персонажа:",
+                Math.round(
+                    progress.loaded /
+                    progress.total *
+                    100
+                ) + "%"
             );
+        }
+    },
 
-        finger.position.set(
-            side*(.055+i*.027),
-            -.68,
-            -.055
-        );
+    function(error){
 
-        finger.rotation.x =
-            .25;
-
-        finger.castShadow=true;
-
-        arm.elbow.add(
-            finger
+        console.error(
+            "ОШИБКА ЗАГРУЗКИ ПЕРСОНАЖА:",
+            error
         );
     }
+);
+
+
+/* =====================================================
+   ПЕРЕКЛЮЧЕНИЕ АНИМАЦИЙ
+===================================================== */
+
+function playCharacterAnimation(action){
+
+    if(!action) return;
+
+    if(activeAction === action) return;
+
+    const previousAction =
+        activeAction;
+
+    activeAction =
+        action;
+
+    action.reset();
+    action.enabled = true;
+    action.setEffectiveTimeScale(1);
+    action.setEffectiveWeight(1);
+
+    if(previousAction){
+
+        action.crossFadeFrom(
+            previousAction,
+            0.18,
+            true
+        );
+    }
+
+    action.play();
 }
 
-addFingers(
-    leftArm,
-    -1
-);
-
-addFingers(
-    rightArm,
-    1
-);
-
 
 /* =====================================================
-   ПОЛОЖЕНИЕ ПЕРСОНАЖА
+   АНИМАЦИЯ ПЕРСОНАЖА
 ===================================================== */
 
-player.position.set(
-    0,
-    0,
-    80
-);
-
-
-/* =====================================================
-   ПРОПОРЦИИ
-===================================================== */
-
-player.scale.set(
-    1.15,
-    1.15,
-    1.15
-);
-
-
-/* =====================================================
-   АНИМАЦИЯ ЧАСТЕЙ
-===================================================== */
-
-function animateCharacter(
-    time,
-    moving
+function updateCharacterAnimation(
+    delta,
+    moving,
+    running
 ){
 
-    if(moving){
+    if(!characterMixer)
+        return;
 
-        const swing =
-            Math.sin(time)*.55;
+    characterMixer.update(delta);
 
-        const opposite =
-            Math.sin(time+Math.PI)*.55;
+    if(running && runAction){
 
+        playCharacterAnimation(
+            runAction
+        );
 
-        /* ноги */
+    }else if(moving && walkAction){
 
-        leftLeg.hip.rotation.x =
-            swing;
+        playCharacterAnimation(
+            walkAction
+        );
 
-        rightLeg.hip.rotation.x =
-            opposite;
+    }else if(idleAction){
 
-
-        leftLeg.knee.rotation.x =
-            Math.max(
-                0,
-                -swing
-            )*.55;
-
-        rightLeg.knee.rotation.x =
-            Math.max(
-                0,
-                -opposite
-            )*.55;
-
-
-        /* руки */
-
-        leftArm.upper.rotation.x =
-            opposite*.72;
-
-        rightArm.upper.rotation.x =
-            swing*.72;
-
-
-        leftArm.elbow.rotation.x =
-            Math.max(
-                0,
-                swing
-            )*.35;
-
-        rightArm.elbow.rotation.x =
-            Math.max(
-                0,
-                opposite
-            )*.35;
-
-    }else{
-
-        leftLeg.hip.rotation.x *= .82;
-        rightLeg.hip.rotation.x *= .82;
-
-        leftLeg.knee.rotation.x *= .82;
-        rightLeg.knee.rotation.x *= .82;
-
-        leftArm.upper.rotation.x *= .82;
-        rightArm.upper.rotation.x *= .82;
-
-        leftArm.elbow.rotation.x *= .82;
-        rightArm.elbow.rotation.x *= .82;
+        playCharacterAnimation(
+            idleAction
+        );
     }
 }
 
