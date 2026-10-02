@@ -2,7 +2,9 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+
 <title>Ачинск 3D</title>
 
 <style>
@@ -17,104 +19,155 @@ html,body{
     width:100%;
     height:100%;
     overflow:hidden;
-    background:#71808a;
+    background:#080b10;
+    font-family:Arial,sans-serif;
     touch-action:none;
 }
 
 #game{
     position:fixed;
     inset:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
 }
 
 canvas{
-    position:absolute;
-    inset:0;
+    display:block;
     width:100%;
     height:100%;
-    display:block;
 }
 
-#ui{
-    position:fixed;
-    inset:0;
-    pointer-events:none;
-}
-
-#title{
+#loading{
     position:absolute;
-    top:12px;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    background:#080b10;
+    color:white;
+    z-index:100;
+    font-size:18px;
+}
+
+#loadingBar{
+    width:220px;
+    height:5px;
+    margin-top:14px;
+    background:#202630;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+#loadingProgress{
+    width:0%;
+    height:100%;
+    background:#fff;
+    transition:width .2s;
+}
+
+#hint{
+    position:absolute;
+    top:14px;
     left:50%;
     transform:translateX(-50%);
-    padding:8px 14px;
-    border-radius:12px;
+    color:rgba(255,255,255,.8);
+    font-size:12px;
     background:rgba(0,0,0,.35);
-    color:white;
-    font:600 12px Arial,sans-serif;
-    z-index:5;
+    padding:7px 12px;
+    border-radius:12px;
+    pointer-events:none;
+    z-index:10;
+}
+
+#controls{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    z-index:20;
 }
 
 #joystick{
     position:absolute;
-    left:18px;
-    bottom:18px;
-    width:140px;
-    height:140px;
+    left:24px;
+    bottom:24px;
+    width:150px;
+    height:150px;
     border-radius:50%;
     background:rgba(255,255,255,.10);
-    border:2px solid rgba(255,255,255,.25);
+    border:2px solid rgba(255,255,255,.22);
+    box-shadow:0 5px 25px rgba(0,0,0,.35);
     pointer-events:auto;
-    z-index:10;
 }
 
-#knob{
+#joystickKnob{
     position:absolute;
-    left:40px;
-    top:40px;
-    width:56px;
-    height:56px;
+    width:62px;
+    height:62px;
+    left:44px;
+    top:44px;
     border-radius:50%;
-    background:rgba(255,255,255,.35);
+    background:rgba(255,255,255,.32);
     border:2px solid rgba(255,255,255,.55);
+    box-shadow:0 4px 15px rgba(0,0,0,.35);
 }
 
 #jump{
     position:absolute;
-    right:22px;
-    bottom:28px;
-    width:78px;
-    height:78px;
+    right:28px;
+    bottom:38px;
+    width:82px;
+    height:82px;
     border-radius:50%;
+    border:2px solid rgba(255,255,255,.35);
     background:rgba(255,255,255,.13);
-    border:2px solid rgba(255,255,255,.30);
     color:white;
-    font:bold 28px Arial;
+    font-size:28px;
     display:flex;
     align-items:center;
     justify-content:center;
     pointer-events:auto;
-    z-index:10;
+    box-shadow:0 5px 25px rgba(0,0,0,.35);
 }
 
-@media(max-width:700px){
-    #joystick{
-        width:130px;
-        height:130px;
-        left:15px;
-        bottom:15px;
+#jump:active{
+    background:rgba(255,255,255,.3);
+    transform:scale(.94);
+}
+
+@media (orientation:portrait){
+    #hint{
+        top:50%;
+        font-size:15px;
+        padding:12px 18px;
     }
 
-    #knob{
-        left:36px;
-        top:36px;
-        width:54px;
-        height:54px;
+    #hint::after{
+        content:"";
+    }
+}
+
+@media (max-width:700px){
+    #joystick{
+        left:18px;
+        bottom:18px;
+        width:135px;
+        height:135px;
+    }
+
+    #joystickKnob{
+        width:58px;
+        height:58px;
+        left:36.5px;
+        top:36.5px;
     }
 
     #jump{
-        width:70px;
-        height:70px;
-        right:18px;
-        bottom:22px;
+        right:20px;
+        bottom:25px;
+        width:72px;
+        height:72px;
     }
 }
 </style>
@@ -124,901 +177,1639 @@ canvas{
 
 <div id="game"></div>
 
-<div id="ui">
-    <div id="title">АЧИНСК 3D</div>
+<div id="loading">
+    <div>АЧИНСК 3D</div>
+    <div style="font-size:12px;opacity:.6;margin-top:5px">
+        загрузка города...
+    </div>
+    <div id="loadingBar">
+        <div id="loadingProgress"></div>
+    </div>
+</div>
+
+<div id="hint">Свайп справа — камера</div>
+
+<div id="controls">
 
     <div id="joystick">
-        <div id="knob"></div>
+        <div id="joystickKnob"></div>
     </div>
 
     <div id="jump">↑</div>
+
 </div>
 
-<script>
-"use strict";
+<script type="module">
+
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+
+import {GLTFLoader} from
+"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js";
 
 /* =========================================================
-   АЧИНСК 3D
-   ОДИН ФАЙЛ
-   БЕЗ THREE.JS
-   БЕЗ GLB
-   БЕЗ ВНЕШНИХ ЗАГРУЗОК
+   ОСНОВНЫЕ НАСТРОЙКИ
 ========================================================= */
 
-const game = document.getElementById("game");
+const CITY_SIZE = 1100;
 
-const canvas = document.createElement("canvas");
-game.appendChild(canvas);
+const PLAYER_SPEED = 20;
 
-const gl = canvas.getContext("webgl", {
-    antialias:true,
-    alpha:false,
-    depth:true,
-    powerPreference:"high-performance"
-});
+const RUN_MULTIPLIER = 1.45;
 
-if(!gl){
-    document.body.innerHTML =
-        "<div style='color:white;font:18px Arial;text-align:center;padding:40px'>" +
-        "WebGL недоступен.<br><br>Открой игру в Safari или Chrome." +
-        "</div>";
-    throw new Error("WebGL unavailable");
-}
+const GRAVITY = -42;
+
+const JUMP_POWER = 15;
+
+const COLLISION_PADDING = 1.8;
+
+const ROAD_WIDTH = 26;
+
+const ROAD_GAP = 190;
+
+const WORLD_LIMIT = CITY_SIZE / 2 - 12;
 
 /* =========================================================
-   SHADERS
+   СЦЕНА
 ========================================================= */
 
-const vertexSource = `
-attribute vec3 aPosition;
-attribute vec3 aNormal;
-attribute vec3 aColor;
+const scene = new THREE.Scene();
 
-uniform mat4 uProjection;
-uniform mat4 uView;
-uniform mat4 uModel;
+scene.background = new THREE.Color(0x91a5b7);
 
-varying vec3 vNormal;
-varying vec3 vColor;
-varying vec3 vWorld;
-
-void main(){
-
-    vec4 world =
-        uModel *
-        vec4(aPosition,1.0);
-
-    vWorld = world.xyz;
-
-    vNormal =
-        mat3(uModel) *
-        aNormal;
-
-    vColor = aColor;
-
-    gl_Position =
-        uProjection *
-        uView *
-        world;
-}
-`;
-
-const fragmentSource = `
-precision mediump float;
-
-varying vec3 vNormal;
-varying vec3 vColor;
-varying vec3 vWorld;
-
-uniform vec3 uLight;
-
-void main(){
-
-    vec3 n = normalize(vNormal);
-
-    float light =
-        max(dot(n,normalize(uLight)),0.0);
-
-    float ambient = .42;
-
-    vec3 color =
-        vColor *
-        (ambient + light*.68);
-
-    float fog =
-        clamp(
-            (length(vWorld)-180.0)/650.0,
-            0.0,
-            .72
-        );
-
-    color =
-        mix(
-            color,
-            vec3(.40,.46,.50),
-            fog
-        );
-
-    gl_FragColor =
-        vec4(color,1.0);
-}
-`;
-
-/* =========================================================
-   SHADER
-========================================================= */
-
-function shader(type,source){
-
-    const s=gl.createShader(type);
-
-    gl.shaderSource(s,source);
-    gl.compileShader(s);
-
-    if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){
-        throw new Error(gl.getShaderInfoLog(s));
-    }
-
-    return s;
-}
-
-const vs=shader(gl.VERTEX_SHADER,vertexSource);
-const fs=shader(gl.FRAGMENT_SHADER,fragmentSource);
-
-const program=gl.createProgram();
-
-gl.attachShader(program,vs);
-gl.attachShader(program,fs);
-gl.linkProgram(program);
-
-if(!gl.getProgramParameter(program,gl.LINK_STATUS)){
-    throw new Error(gl.getProgramInfoLog(program));
-}
-
-gl.useProgram(program);
-
-/* =========================================================
-   ATTRIBUTES / UNIFORMS
-========================================================= */
-
-const aPosition=
-    gl.getAttribLocation(program,"aPosition");
-
-const aNormal=
-    gl.getAttribLocation(program,"aNormal");
-
-const aColor=
-    gl.getAttribLocation(program,"aColor");
-
-const uProjection=
-    gl.getUniformLocation(program,"uProjection");
-
-const uView=
-    gl.getUniformLocation(program,"uView");
-
-const uModel=
-    gl.getUniformLocation(program,"uModel");
-
-const uLight=
-    gl.getUniformLocation(program,"uLight");
-
-/* =========================================================
-   МАТРИЦЫ
-========================================================= */
-
-function identity(){
-
-    return [
-        1,0,0,0,
-        0,1,0,0,
-        0,0,1,0,
-        0,0,0,1
-    ];
-}
-
-function multiply(a,b){
-
-    const r=new Array(16);
-
-    for(let c=0;c<4;c++){
-        for(let row=0;row<4;row++){
-
-            r[c*4+row]=
-                a[row]    * b[c*4] +
-                a[4+row]  * b[c*4+1] +
-                a[8+row]  * b[c*4+2] +
-                a[12+row] * b[c*4+3];
-        }
-    }
-
-    return r;
-}
-
-function translation(x,y,z){
-
-    const m=identity();
-
-    m[12]=x;
-    m[13]=y;
-    m[14]=z;
-
-    return m;
-}
-
-function scale(x,y,z){
-
-    const m=identity();
-
-    m[0]=x;
-    m[5]=y;
-    m[10]=z;
-
-    return m;
-}
-
-function rotationY(a){
-
-    const c=Math.cos(a);
-    const s=Math.sin(a);
-
-    return [
-         c,0,-s,0,
-         0,1, 0,0,
-         s,0, c,0,
-         0,0, 0,1
-    ];
-}
-
-function perspective(fov,aspect,near,far){
-
-    const f=1/Math.tan(fov/2);
-    const nf=1/(near-far);
-
-    return [
-        f/aspect,0,0,0,
-        0,f,0,0,
-        0,0,(far+near)*nf,-1,
-        0,0,(2*far*near)*nf,0
-    ];
-}
-
-function lookAt(eye,center,up){
-
-    let zx=eye[0]-center[0];
-    let zy=eye[1]-center[1];
-    let zz=eye[2]-center[2];
-
-    let zl=Math.hypot(zx,zy,zz);
-
-    zx/=zl;
-    zy/=zl;
-    zz/=zl;
-
-    let xx=
-        up[1]*zz -
-        up[2]*zy;
-
-    let xy=
-        up[2]*zx -
-        up[0]*zz;
-
-    let xz=
-        up[0]*zy -
-        up[1]*zx;
-
-    let xl=Math.hypot(xx,xy,xz);
-
-    xx/=xl;
-    xy/=xl;
-    xz/=xl;
-
-    const yx=zy*xz-zz*xy;
-    const yy=zz*xx-zx*xz;
-    const yz=zx*xy-zy*xx;
-
-    return [
-
-        xx,yx,zx,0,
-        xy,yy,zy,0,
-        xz,yz,zz,0,
-
-        -(xx*eye[0]+xy*eye[1]+xz*eye[2]),
-        -(yx*eye[0]+yy*eye[1]+yz*eye[2]),
-        -(zx*eye[0]+zy*eye[1]+zz*eye[2]),
-        1
-    ];
-}
-
-/* =========================================================
-   КУБ
-========================================================= */
-
-const meshes=[];
-
-const cubePositions=[
-    -1,-1, 1, 1,-1, 1, 1, 1, 1,-1, 1, 1,
-    -1,-1,-1,-1, 1,-1, 1, 1,-1, 1,-1,-1,
-    -1, 1,-1,-1, 1, 1, 1, 1, 1, 1, 1,-1,
-    -1,-1,-1, 1,-1,-1, 1,-1, 1,-1,-1, 1,
-     1,-1,-1, 1, 1,-1, 1, 1, 1, 1,-1, 1,
-    -1,-1,-1,-1,-1, 1,-1, 1, 1,-1, 1,-1
-];
-
-const cubeNormals=[
-     0,0,1, 0,0,1, 0,0,1, 0,0,1,
-     0,0,-1,0,0,-1,0,0,-1,0,0,-1,
-     0,1,0, 0,1,0, 0,1,0, 0,1,0,
-     0,-1,0,0,-1,0,0,-1,0,0,-1,0,
-     1,0,0, 1,0,0, 1,0,0, 1,0,0,
-    -1,0,0,-1,0,0,-1,0,0,-1,0,0
-];
-
-const cubeIndices=[
-     0,1,2, 0,2,3,
-     4,5,6, 4,6,7,
-     8,9,10,8,10,11,
-    12,13,14,12,14,15,
-    16,17,18,16,18,19,
-    20,21,22,20,22,23
-];
-
-function makeMesh(
-    x,y,z,
-    sx,sy,sz,
-    color,
-    rot=0,
-    type="world"
-){
-
-    const colors=[];
-
-    for(let i=0;i<24;i++){
-
-        colors.push(
-            color[0],
-            color[1],
-            color[2]
-        );
-    }
-
-    const mesh={
-        x,y,z,
-        sx,sy,sz,
-        rot,
-        type
-    };
-
-    mesh.positionBuffer=gl.createBuffer();
-    gl.bindBuffer(
-        gl.ARRAY_BUFFER,
-        mesh.positionBuffer
-    );
-    gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Float32Array(cubePositions),
-        gl.STATIC_DRAW
-    );
-
-    mesh.normalBuffer=gl.createBuffer();
-    gl.bindBuffer(
-        gl.ARRAY_BUFFER,
-        mesh.normalBuffer
-    );
-    gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Float32Array(cubeNormals),
-        gl.STATIC_DRAW
-    );
-
-    mesh.colorBuffer=gl.createBuffer();
-    gl.bindBuffer(
-        gl.ARRAY_BUFFER,
-        mesh.colorBuffer
-    );
-    gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Float32Array(colors),
-        gl.STATIC_DRAW
-    );
-
-    mesh.indexBuffer=gl.createBuffer();
-    gl.bindBuffer(
-        gl.ELEMENT_ARRAY_BUFFER,
-        mesh.indexBuffer
-    );
-    gl.bufferData(
-        gl.ELEMENT_ARRAY_BUFFER,
-        new Uint16Array(cubeIndices),
-        gl.STATIC_DRAW
-    );
-
-    meshes.push(mesh);
-
-    return mesh;
-}
-
-/* =========================================================
-   ГОРОД
-========================================================= */
-
-const CITY=900;
-const ROAD=24;
-const BLOCK=150;
-
-/* Земля */
-makeMesh(
-    0,-2,0,
-    CITY,2,CITY,
-    [.18,.21,.20]
+scene.fog = new THREE.FogExp2(
+    0x8998a6,
+    0.00155
 );
 
-/* Дороги */
+/* =========================================================
+   КАМЕРА
+========================================================= */
 
-function road(x,z,sx,sz){
+const camera = new THREE.PerspectiveCamera(
+    62,
+    innerWidth / innerHeight,
+    0.1,
+    1500
+);
 
-    makeMesh(
-        x,.02,z,
-        sx,.025,sz,
-        [.065,.075,.078]
-    );
+camera.position.set(
+    0,
+    5,
+    8
+);
+
+/* =========================================================
+   RENDERER
+========================================================= */
+
+const renderer = new THREE.WebGLRenderer({
+
+    antialias:true,
+
+    powerPreference:"high-performance",
+
+    logarithmicDepthBuffer:false
+
+});
+
+renderer.setPixelRatio(
+    Math.min(
+        window.devicePixelRatio || 1,
+        1.5
+    )
+);
+
+renderer.setSize(
+    innerWidth,
+    innerHeight,
+    false
+);
+
+renderer.shadowMap.enabled = true;
+
+renderer.shadowMap.type =
+    THREE.PCFSoftShadowMap;
+
+renderer.outputColorSpace =
+    THREE.SRGBColorSpace;
+
+renderer.toneMapping =
+    THREE.ACESFilmicToneMapping;
+
+renderer.toneMappingExposure = 1.05;
+
+document
+    .getElementById("game")
+    .appendChild(renderer.domElement);
+
+/* =========================================================
+   LIGHTING
+========================================================= */
+
+const hemi = new THREE.HemisphereLight(
+    0xb8c9d8,
+    0x283029,
+    1.55
+);
+
+scene.add(hemi);
+
+const sun = new THREE.DirectionalLight(
+    0xffd4a3,
+    2.5
+);
+
+sun.position.set(
+    -280,
+    380,
+    220
+);
+
+sun.castShadow = true;
+
+sun.shadow.mapSize.set(
+    1024,
+    1024
+);
+
+sun.shadow.camera.left = -300;
+sun.shadow.camera.right = 300;
+sun.shadow.camera.top = 300;
+sun.shadow.camera.bottom = -300;
+
+sun.shadow.camera.near = 20;
+sun.shadow.camera.far = 850;
+
+sun.shadow.bias = -0.0003;
+
+scene.add(sun);
+
+/* =========================================================
+   МАТЕРИАЛЫ
+========================================================= */
+
+function mat(
+    color,
+    roughness=.8,
+    metalness=.02
+){
+
+    return new THREE.MeshStandardMaterial({
+
+        color,
+
+        roughness,
+
+        metalness
+
+    });
+
 }
 
-road(0,0,CITY,ROAD);
-road(0,0,ROAD,CITY);
+const groundMat =
+    mat(0x303633,.98);
 
-road(BLOCK,0,18,CITY);
-road(-BLOCK,0,18,CITY);
+const asphaltMat =
+    mat(0x1d2021,.92);
 
-road(0,BLOCK,CITY,18);
-road(0,-BLOCK,CITY,18);
+const sidewalkMat =
+    mat(0x777876,.9);
 
-/* Разметка */
+const curbMat =
+    mat(0x969795,.85);
 
-for(let i=-420;i<=420;i+=24){
+const whiteMat =
+    mat(0xdadbd6,.7);
 
-    makeMesh(
-        i,.055,0,
-        5,.01,.14,
-        [.85,.82,.65]
+const yellowMat =
+    mat(0xd6b84e,.65);
+
+const glassMat =
+    new THREE.MeshStandardMaterial({
+
+        color:0x203344,
+
+        roughness:.24,
+
+        metalness:.15,
+
+        transparent:true,
+
+        opacity:.78
+
+    });
+
+const darkGlassMat =
+    new THREE.MeshStandardMaterial({
+
+        color:0x101820,
+
+        roughness:.2,
+
+        metalness:.25
+
+    });
+
+const treeTrunkMat =
+    mat(0x3b2920,.95);
+
+const leafMat =
+    new THREE.MeshStandardMaterial({
+
+        color:0x263b29,
+
+        roughness:1
+
+    });
+
+/* =========================================================
+   ПОМОЩНИКИ
+========================================================= */
+
+function box(
+    w,
+    h,
+    d,
+    material,
+    x=0,
+    y=0,
+    z=0
+){
+
+    const mesh =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(w,h,d),
+            material
+        );
+
+    mesh.position.set(
+        x,
+        y,
+        z
     );
 
-    makeMesh(
-        0,.055,i,
-        .14,.01,5,
-        [.85,.82,.65]
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+
+    return mesh;
+
+}
+
+function cyl(
+    r,
+    h,
+    material,
+    x=0,
+    y=0,
+    z=0
+){
+
+    const mesh =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                r,
+                r,
+                h,
+                10
+            ),
+            material
+        );
+
+    mesh.position.set(
+        x,
+        y,
+        z
     );
+
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+
+    return mesh;
+
+}
+
+/* =========================================================
+   ЗЕМЛЯ
+========================================================= */
+
+const ground =
+    new THREE.Mesh(
+        new THREE.PlaneGeometry(
+            CITY_SIZE,
+            CITY_SIZE
+        ),
+        groundMat
+    );
+
+ground.rotation.x = -Math.PI/2;
+
+ground.receiveShadow = true;
+
+scene.add(ground);
+
+/* =========================================================
+   ДОРОГИ
+========================================================= */
+
+function createRoad(
+    x,
+    z,
+    width,
+    length,
+    rotation=0
+){
+
+    const road =
+        box(
+            width,
+            .08,
+            length,
+            asphaltMat,
+            x,
+            .04,
+            z
+        );
+
+    road.rotation.y =
+        rotation;
+
+    scene.add(road);
+
+    /* бордюры */
+
+    const curb1 =
+        box(
+            .7,
+            .25,
+            length,
+            curbMat,
+            x-width/2-.35,
+            .14,
+            z
+        );
+
+    const curb2 =
+        box(
+            .7,
+            .25,
+            length,
+            curbMat,
+            x+width/2+.35,
+            .14,
+            z
+        );
+
+    curb1.rotation.y = rotation;
+    curb2.rotation.y = rotation;
+
+    scene.add(curb1,curr=curb2);
+
+}
+
+/* исправление ссылки */
+
+function road(
+    x,
+    z,
+    width,
+    length,
+    rotation=0
+){
+
+    const group =
+        new THREE.Group();
+
+    const r =
+        box(
+            width,
+            .08,
+            length,
+            asphaltMat
+        );
+
+    r.rotation.y = rotation;
+
+    group.add(r);
+
+    const c1 =
+        box(
+            .65,
+            .22,
+            length,
+            curbMat
+        );
+
+    c1.position.x =
+        -width/2-.35;
+
+    const c2 =
+        box(
+            .65,
+            .22,
+            length,
+            curbMat
+        );
+
+    c2.position.x =
+        width/2+.35;
+
+    c1.rotation.y = rotation;
+    c2.rotation.y = rotation;
+
+    group.add(c1,c2);
+
+    group.position.set(
+        x,
+        0,
+        z
+    );
+
+    scene.add(group);
+
+}
+
+/* главные дороги */
+
+road(
+    0,
+    0,
+    ROAD_WIDTH,
+    CITY_SIZE
+);
+
+road(
+    0,
+    0,
+    ROAD_WIDTH,
+    CITY_SIZE,
+    Math.PI/2
+);
+
+road(
+    ROAD_GAP,
+    0,
+    20,
+    CITY_SIZE
+);
+
+road(
+    -ROAD_GAP,
+    0,
+    20,
+    CITY_SIZE
+);
+
+road(
+    0,
+    ROAD_GAP,
+    20,
+    CITY_SIZE,
+    Math.PI/2
+);
+
+road(
+    0,
+    -ROAD_GAP,
+    20,
+    CITY_SIZE,
+    Math.PI/2
+);
+
+/* =========================================================
+   ДОРОЖНАЯ РАЗМЕТКА
+========================================================= */
+
+const lineGeo =
+    new THREE.BoxGeometry(
+        .22,
+        .025,
+        7
+    );
+
+const lineMat =
+    new THREE.MeshBasicMaterial({
+        color:0xe7e5d8
+    });
+
+const lines =
+    new THREE.InstancedMesh(
+        lineGeo,
+        lineMat,
+        400
+    );
+
+let lineIndex=0;
+
+for(
+    let x=-CITY_SIZE/2;
+    x<CITY_SIZE/2;
+    x+=14
+){
+
+    if(lineIndex>=400) break;
+
+    const m =
+        new THREE.Matrix4();
+
+    m.makeTranslation(
+        0,
+        .1,
+        x
+    );
+
+    lines.setMatrixAt(
+        lineIndex++,
+        m
+    );
+
+}
+
+lines.count=lineIndex;
+
+scene.add(lines);
+
+/* =========================================================
+   КОЛЛИЗИИ
+========================================================= */
+
+const buildingColliders=[];
+
+function addCollider(
+    x,
+    z,
+    w,
+    d
+){
+
+    buildingColliders.push({
+
+        minX:x-w/2,
+
+        maxX:x+w/2,
+
+        minZ:z-d/2,
+
+        maxZ:z+d/2
+
+    });
+
+}
+
+/* =========================================================
+   ОКНА
+========================================================= */
+
+const windowGeo =
+    new THREE.BoxGeometry(
+        1.7,
+        1.35,
+        .08
+    );
+
+const windowMat =
+    new THREE.MeshStandardMaterial({
+
+        color:0x344a5a,
+
+        roughness:.32,
+
+        metalness:.12
+
+    });
+
+const windows =
+    new THREE.InstancedMesh(
+        windowGeo,
+        windowMat,
+        2200
+    );
+
+let windowIndex=0;
+
+function addWindow(
+    x,
+    y,
+    z,
+    rotY=0
+){
+
+    if(windowIndex>=2200)
+        return;
+
+    const matrix =
+        new THREE.Matrix4();
+
+    const q =
+        new THREE.Quaternion();
+
+    q.setFromAxisAngle(
+        new THREE.Vector3(0,1,0),
+        rotY
+    );
+
+    matrix.compose(
+
+        new THREE.Vector3(
+            x,
+            y,
+            z
+        ),
+
+        q,
+
+        new THREE.Vector3(
+            1,
+            1,
+            1
+        )
+
+    );
+
+    windows.setMatrixAt(
+        windowIndex++,
+        matrix
+    );
+
+}
+
+/* =========================================================
+   БАЛКОНЫ
+========================================================= */
+
+function addBalcony(
+    x,
+    y,
+    z,
+    rotY
+){
+
+    const b =
+        box(
+            3.2,
+            .16,
+            1.3,
+            curbMat
+        );
+
+    b.position.set(
+        x,
+        y,
+        z
+    );
+
+    b.rotation.y =
+        rotY;
+
+    scene.add(b);
+
 }
 
 /* =========================================================
    ЗДАНИЯ
 ========================================================= */
 
-let seed=73829;
+const buildingColors=[
+    0x77766e,
+    0x8b8175,
+    0x6c7473,
+    0x8e8c84,
+    0x706b66,
+    0x9a9388,
+    0x686f72,
+    0x81786e
+];
 
-function random(){
+function createBuilding(
+    x,
+    z,
+    w,
+    d,
+    h,
+    color
+){
 
-    seed=
-        (seed*1664525+1013904223)
-        >>>0;
+    const group =
+        new THREE.Group();
 
-    return seed/4294967296;
+    const body =
+        box(
+            w,
+            h,
+            d,
+            mat(
+                color,
+                .9,
+                .02
+            )
+        );
+
+    body.position.y =
+        h/2;
+
+    group.add(body);
+
+    /* крыша */
+
+    const roof =
+        box(
+            w+.7,
+            .22,
+            d+.7,
+            mat(0x353636,.95)
+        );
+
+    roof.position.y =
+        h+.11;
+
+    group.add(roof);
+
+    /* вертикальные секции */
+
+    if(w>18){
+
+        for(
+            let sx=-w/2+4;
+            sx<w/2-2;
+            sx+=7
+        ){
+
+            const strip =
+                box(
+                    .16,
+                    h,
+                    .15,
+                    mat(0x5d5b57,.9)
+                );
+
+            strip.position.set(
+                sx,
+                h/2,
+                -d/2-.09
+            );
+
+            group.add(strip);
+
+        }
+
+    }
+
+    scene.add(group);
+
+    group.position.set(
+        x,
+        0,
+        z
+    );
+
+    addCollider(
+        x,
+        z,
+        w,
+        d
+    );
+
+    /* окна спереди */
+
+    const rows =
+        Math.max(
+            1,
+            Math.floor(h/3.2)
+        );
+
+    const cols =
+        Math.max(
+            1,
+            Math.floor(w/3.7)
+        );
+
+    for(
+        let row=0;
+        row<rows;
+        row++
+    ){
+
+        const yy =
+            2.1+
+            row*3.05;
+
+        for(
+            let col=0;
+            col<cols;
+            col++
+        ){
+
+            const xx =
+                x-w/2+
+                2.1+
+                col*3.7;
+
+            addWindow(
+                xx,
+                yy,
+                z-d/2-.08,
+                0
+            );
+
+            if(
+                (row+col)%5===0 &&
+                h>12
+            ){
+
+                addBalcony(
+                    xx,
+                    yy-.72,
+                    z-d/2-1.0,
+                    0
+                );
+
+            }
+
+        }
+
+    }
+
+    /* окна с боков */
+
+    for(
+        let row=0;
+        row<rows;
+        row++
+    ){
+
+        const yy =
+            2.1+
+            row*3.05;
+
+        for(
+            let col=0;
+            col<Math.floor(d/4);
+            col++
+        ){
+
+            const zz =
+                z-d/2+
+                2+
+                col*4;
+
+            addWindow(
+                x+w/2+.08,
+                yy,
+                zz,
+                Math.PI/2
+            );
+
+        }
+
+    }
+
 }
 
-function nearRoad(x,z){
+/* =========================================================
+   РАЙОНЫ
+========================================================= */
+
+function isRoadPosition(
+    x,
+    z
+){
 
     const roads=[
         0,
-        BLOCK,
-        -BLOCK
+        ROAD_GAP,
+        -ROAD_GAP
     ];
 
     for(const r of roads){
 
-        if(Math.abs(x-r)<34)
+        if(
+            Math.abs(x-r)
+            <
+            ROAD_WIDTH/2+18
+        )
             return true;
 
-        if(Math.abs(z-r)<34)
+        if(
+            Math.abs(z-r)
+            <
+            ROAD_WIDTH/2+18
+        )
             return true;
+
     }
 
     return false;
+
 }
 
-const buildingColors=[
-    [.36,.36,.34],
-    [.43,.40,.35],
-    [.34,.39,.40],
-    [.48,.45,.40],
-    [.39,.37,.35],
-    [.46,.44,.39],
-    [.32,.36,.38]
-];
+let seed=42;
 
-for(let i=0;i<85;i++){
+function random(){
 
-    const x=
-        -CITY/2+35+
-        random()*(CITY-70);
+    seed =
+        (seed*1664525+1013904223)
+        %4294967296;
 
-    const z=
-        -CITY/2+35+
-        random()*(CITY-70);
+    return seed/4294967296;
 
-    if(nearRoad(x,z))
+}
+
+for(
+    let i=0;
+    i<95;
+    i++
+){
+
+    const x =
+        -CITY_SIZE/2+
+        50+
+        random()*(CITY_SIZE-100);
+
+    const z =
+        -CITY_SIZE/2+
+        50+
+        random()*(CITY_SIZE-100);
+
+    if(isRoadPosition(x,z))
         continue;
 
-    const w=22+random()*30;
-    const d=22+random()*30;
-    const h=10+random()*34;
+    const w =
+        16+
+        random()*28;
 
-    const color=
+    const d =
+        15+
+        random()*28;
+
+    const h =
+        7+
+        random()*25;
+
+    const color =
         buildingColors[
             Math.floor(
                 random()*buildingColors.length
             )
         ];
 
-    makeMesh(
-        x,h/2,z,
-        w/2,h/2,d/2,
+    createBuilding(
+        x,
+        z,
+        w,
+        d,
+        h,
         color
     );
 
-    /* Крыша */
-
-    makeMesh(
-        x,h+.3,z,
-        w/2+.6,.3,d/2+.6,
-        [.17,.18,.18]
-    );
-
-    /* Окна */
-
-    const cols=Math.max(2,Math.floor(w/5));
-    const rows=Math.max(2,Math.floor(h/4));
-
-    for(let yy=0;yy<rows;yy++){
-
-        for(let xx=0;xx<cols;xx++){
-
-            const wx=
-                x-w/2+2.5+xx*5;
-
-            const wy=
-                2.5+yy*4;
-
-            makeMesh(
-                wx,
-                wy,
-                z-d/2-.18,
-                1.0,.75,.08,
-                [
-                    .10+random()*.08,
-                    .20+random()*.10,
-                    .28+random()*.12
-                ]
-            );
-        }
-    }
 }
+
+windows.instanceMatrix.needsUpdate=true;
+
+scene.add(windows);
 
 /* =========================================================
    ДЕРЕВЬЯ
 ========================================================= */
 
-function tree(x,z,s){
+const treeGroup =
+    new THREE.Group();
 
-    makeMesh(
-        x,
-        2*s,
-        z,
-        .55*s,
-        2*s,
-        .55*s,
-        [.25,.16,.09]
+function createTree(
+    x,
+    z,
+    scale=1
+){
+
+    const tree =
+        new THREE.Group();
+
+    const trunk =
+        cyl(
+            .28*scale,
+            3.1*scale,
+            treeTrunkMat
+        );
+
+    trunk.position.y =
+        1.55*scale;
+
+    tree.add(trunk);
+
+    const crown1 =
+        new THREE.Mesh(
+            new THREE.IcosahedronGeometry(
+                2.2*scale,
+                1
+            ),
+            leafMat
+        );
+
+    crown1.position.y =
+        4.0*scale;
+
+    crown1.castShadow=true;
+
+    tree.add(crown1);
+
+    const crown2 =
+        new THREE.Mesh(
+            new THREE.IcosahedronGeometry(
+                1.65*scale,
+                1
+            ),
+            leafMat
+        );
+
+    crown2.position.set(
+        .3*scale,
+        5.1*scale,
+        .2*scale
     );
 
-    makeMesh(
+    crown2.castShadow=true;
+
+    tree.add(crown2);
+
+    tree.position.set(
         x,
-        5*s,
-        z,
-        2.5*s,
-        2.3*s,
-        2.5*s,
-        [.07,.20,.09]
+        0,
+        z
     );
 
-    makeMesh(
-        x,
-        7*s,
-        z,
-        1.65*s,
-        1.55*s,
-        1.65*s,
-        [.09,.25,.11]
-    );
+    treeGroup.add(tree);
+
 }
 
-for(let i=0;i<100;i++){
+for(
+    let i=0;
+    i<100;
+    i++
+){
 
-    const x=
-        -CITY/2+20+
-        random()*(CITY-40);
+    const x =
+        -CITY_SIZE/2+
+        30+
+        random()*(CITY_SIZE-60);
 
-    const z=
-        -CITY/2+20+
-        random()*(CITY-40);
+    const z =
+        -CITY_SIZE/2+
+        30+
+        random()*(CITY_SIZE-60);
 
-    if(nearRoad(x,z))
+    if(isRoadPosition(x,z))
         continue;
 
-    tree(
+    createTree(
         x,
         z,
-        .8+random()*.5
+        .75+
+        random()*.55
     );
+
+}
+
+scene.add(treeGroup);
+
+/* =========================================================
+   ФОНАРИ
+========================================================= */
+
+function createLamp(
+    x,
+    z,
+    rot=0
+){
+
+    const group =
+        new THREE.Group();
+
+    const pole =
+        cyl(
+            .11,
+            5.2,
+            mat(0x252729,.8)
+        );
+
+    pole.position.y=2.6;
+
+    group.add(pole);
+
+    const arm =
+        box(
+            1.25,
+            .1,
+            .1,
+            mat(0x252729,.8)
+        );
+
+    arm.position.set(
+        .55,
+        5.05,
+        0
+    );
+
+    group.add(arm);
+
+    const lamp =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                .18,
+                8,
+                8
+            ),
+            new THREE.MeshBasicMaterial({
+                color:0xffd98b
+            })
+        );
+
+    lamp.position.set(
+        1.12,
+        4.95,
+        0
+    );
+
+    group.add(lamp);
+
+    group.position.set(
+        x,
+        0,
+        z
+    );
+
+    group.rotation.y =
+        rot;
+
+    scene.add(group);
+
+}
+
+for(
+    let i=-500;
+    i<=500;
+    i+=45
+){
+
+    createLamp(
+        ROAD_WIDTH/2+4,
+        i,
+        0
+    );
+
+    createLamp(
+        -ROAD_WIDTH/2-4,
+        i,
+        Math.PI
+    );
+
 }
 
 /* =========================================================
    МАШИНЫ
 ========================================================= */
 
-function car(x,z,rot,color){
+const carColors=[
+    0x30363a,
+    0x5b6064,
+    0x8a2f2b,
+    0x74726c,
+    0x1f2930,
+    0x9b9b91
+];
 
-    makeMesh(
-        x,1,z,
-        2.5,.65,1.1,
-        color,
-        rot
-    );
-
-    makeMesh(
-        x,1.75,z,
-        1.35,.42,.82,
-        [.07,.10,.12],
-        rot
-    );
-}
-
-car(45,0,0,[.28,.30,.32]);
-car(-65,0,0,[.55,.12,.10]);
-car(105,0,0,[.55,.55,.50]);
-car(-125,0,0,[.15,.20,.23]);
-
-car(0,55,Math.PI/2,[.35,.36,.38]);
-car(0,-70,Math.PI/2,[.48,.45,.40]);
-car(0,130,Math.PI/2,[.22,.25,.28]);
-
-/* =========================================================
-   ПЕРСОНАЖ
-   СОЗДАЁТСЯ ОДИН РАЗ
-========================================================= */
-
-const player={
-    x:0,
-    y:0,
-    z:65,
-    vy:0,
-    rot:0
-};
-
-const playerMeshes=[];
-
-function playerPart(
-    x,y,z,
-    sx,sy,sz,
+function createCar(
+    x,
+    z,
+    rot,
     color
 ){
 
-    const m=makeMesh(
-        x,y,z,
-        sx,sy,sz,
-        color,
-        0,
-        "player"
+    const car =
+        new THREE.Group();
+
+    const body =
+        box(
+            4.4,
+            1.05,
+            1.9,
+            mat(color,.65,.15)
+        );
+
+    body.position.y=.8;
+
+    car.add(body);
+
+    const cabin =
+        box(
+            2.4,
+            .85,
+            1.55,
+            darkGlassMat
+        );
+
+    cabin.position.set(
+        -.1,
+        1.65,
+        0
     );
 
-    playerMeshes.push(m);
+    car.add(cabin);
 
-    return m;
-}
+    const wheelMat =
+        mat(0x101112,.95);
 
-/* Создаём персонажа ОДИН РАЗ */
+    const wheelGeo =
+        new THREE.CylinderGeometry(
+            .42,
+            .42,
+            .25,
+            12
+        );
 
-playerPart(
-    0,1,65,
-    .30,1,.30,
-    [.08,.10,.13]
-);
+    for(
+        const wx of [-1.45,1.45]
+    ){
 
-playerPart(
-    0,1,65,
-    .30,1,.30,
-    [.08,.10,.13]
-);
+        for(
+            const wz of [-1.0,1.0]
+        ){
 
-playerPart(
-    0,2.45,65,
-    .72,1.45,.42,
-    [.16,.20,.24]
-);
+            const wheel =
+                new THREE.Mesh(
+                    wheelGeo,
+                    wheelMat
+                );
 
-playerPart(
-    0,4.15,65,
-    .48,.48,.48,
-    [.58,.43,.34]
-);
+            wheel.rotation.z =
+                Math.PI/2;
 
-playerPart(
-    0,4.58,65,
-    .50,.15,.50,
-    [.055,.04,.03]
-);
+            wheel.position.set(
+                wx,
+                .48,
+                wz
+            );
 
-/* =========================================================
-   ОБНОВЛЕНИЕ ПЕРСОНАЖА
-========================================================= */
+            car.add(wheel);
 
-function updatePlayerMeshes(){
+        }
 
-    playerMeshes[0].x=
-        player.x-.38;
-
-    playerMeshes[0].y=
-        player.y+1;
-
-    playerMeshes[0].z=
-        player.z;
-
-    playerMeshes[0].rot=
-        player.rot;
-
-    playerMeshes[1].x=
-        player.x+.38;
-
-    playerMeshes[1].y=
-        player.y+1;
-
-    playerMeshes[1].z=
-        player.z;
-
-    playerMeshes[1].rot=
-        player.rot;
-
-    playerMeshes[2].x=
-        player.x;
-
-    playerMeshes[2].y=
-        player.y+2.45;
-
-    playerMeshes[2].z=
-        player.z;
-
-    playerMeshes[2].rot=
-        player.rot;
-
-    playerMeshes[3].x=
-        player.x;
-
-    playerMeshes[3].y=
-        player.y+4.15;
-
-    playerMeshes[3].z=
-        player.z;
-
-    playerMeshes[3].rot=
-        player.rot;
-
-    playerMeshes[4].x=
-        player.x;
-
-    playerMeshes[4].y=
-        player.y+4.58;
-
-    playerMeshes[4].z=
-        player.z;
-
-    playerMeshes[4].rot=
-        player.rot;
-}
-
-/* =========================================================
-   КАМЕРА
-========================================================= */
-
-let yaw=0;
-let pitch=.25;
-
-const cameraDistance=13;
-
-function getCamera(){
-
-    const horizontal=
-        cameraDistance*
-        Math.cos(pitch);
-
-    return [
-
-        player.x-
-        Math.sin(yaw)*
-        horizontal,
-
-        player.y+
-        7+
-        cameraDistance*
-        Math.sin(pitch),
-
-        player.z-
-        Math.cos(yaw)*
-        horizontal
-
-    ];
-}
-
-/* =========================================================
-   ДЖОЙСТИК
-========================================================= */
-
-let joyX=0;
-let joyY=0;
-let joyActive=false;
-
-const joystick=
-    document.getElementById("joystick");
-
-const knob=
-    document.getElementById("knob");
-
-function updateJoystick(x,y){
-
-    const r=
-        joystick.getBoundingClientRect();
-
-    const cx=
-        r.left+r.width/2;
-
-    const cy=
-        r.top+r.height/2;
-
-    let dx=x-cx;
-    let dy=y-cy;
-
-    const max=43;
-
-    const distance=
-        Math.hypot(dx,dy);
-
-    if(distance>max){
-
-        dx=
-            dx/distance*max;
-
-        dy=
-            dy/distance*max;
     }
 
-    joyX=dx/max;
-    joyY=dy/max;
+    car.position.set(
+        x,
+        0,
+        z
+    );
 
-    knob.style.transform=
+    car.rotation.y =
+        rot;
+
+    car.traverse(
+        o=>{
+            if(o.isMesh){
+                o.castShadow=true;
+                o.receiveShadow=true;
+            }
+        }
+    );
+
+    scene.add(car);
+
+}
+
+for(
+    let i=0;
+    i<26;
+    i++
+){
+
+    const vertical =
+        random()>.5;
+
+    const lane =
+        vertical
+        ? ROAD_WIDTH/2-4
+        : ROAD_WIDTH/2-4;
+
+    const offset =
+        -500+
+        random()*1000;
+
+    const color =
+        carColors[
+            Math.floor(
+                random()*carColors.length
+            )
+        ];
+
+    if(vertical){
+
+        createCar(
+            lane,
+            offset,
+            Math.PI/2,
+            color
+        );
+
+    }else{
+
+        createCar(
+            offset,
+            lane,
+            0,
+            color
+        );
+
+    }
+
+}
+
+/* =========================================================
+   ПЕРСОНАЖ
+========================================================= */
+
+let player =
+    new THREE.Group();
+
+player.position.set(
+    0,
+    0,
+    40
+);
+
+scene.add(player);
+
+let character=null;
+
+let mixer=null;
+
+let idleAction=null;
+
+let walkAction=null;
+
+let runAction=null;
+
+let currentAction=null;
+
+const loader =
+    new GLTFLoader();
+
+const characterURL =
+"https://raw.githubusercontent.com/MMWilliams/char-kit/master/characters/mh_3183.glb";
+
+function setAction(
+    action
+){
+
+    if(
+        !action ||
+        currentAction===action
+    )
+        return;
+
+    if(currentAction){
+
+        currentAction
+            .fadeOut(.18);
+
+    }
+
+    action
+        .reset()
+        .fadeIn(.18)
+        .play();
+
+    currentAction=action;
+
+}
+
+loader.load(
+
+    characterURL,
+
+    gltf=>{
+
+        character =
+            gltf.scene;
+
+        character.scale.set(
+            1.15,
+            1.15,
+            1.15
+        );
+
+        character.traverse(
+            o=>{
+
+                if(o.isMesh){
+
+                    o.castShadow=true;
+
+                    o.receiveShadow=true;
+
+                    if(o.material){
+
+                        o.material.roughness=.78;
+
+                        o.material.metalness=.02;
+
+                    }
+
+                }
+
+            }
+        );
+
+        player.add(character);
+
+        if(gltf.animations.length){
+
+            mixer =
+                new THREE.AnimationMixer(
+                    character
+                );
+
+            const animations =
+                gltf.animations;
+
+            const idle =
+                animations.find(
+                    a =>
+                    /idle/i.test(a.name)
+                )
+                ||
+                animations[0];
+
+            const walk =
+                animations.find(
+                    a =>
+                    /walk/i.test(a.name)
+                )
+                ||
+                animations[1]
+                ||
+                animations[0];
+
+            const run =
+                animations.find(
+                    a =>
+                    /run/i.test(a.name)
+                )
+                ||
+                walk;
+
+            idleAction =
+                mixer.clipAction(idle);
+
+            walkAction =
+                mixer.clipAction(walk);
+
+            runAction =
+                mixer.clipAction(run);
+
+            setAction(
+                idleAction
+            );
+
+        }
+
+        loadingProgress.style.width =
+            "100%";
+
+        setTimeout(
+            ()=>{
+                loading.style.display="none";
+            },
+            350
+        );
+
+    },
+
+    xhr=>{
+
+        if(xhr.total){
+
+            const p =
+                xhr.loaded/
+                xhr.total*
+                100;
+
+            loadingProgress.style.width =
+                p+"%";
+
+        }
+
+    },
+
+    error=>{
+
+        console.warn(
+            "Character load error",
+            error
+        );
+
+        loadingProgress.style.width =
+            "100%";
+
+        loading.style.display="none";
+
+    }
+
+);
+
+/* =========================================================
+   УПРАВЛЕНИЕ
+========================================================= */
+
+let joystickX=0;
+
+let joystickY=0;
+
+let joystickActive=false;
+
+const joystick =
+    document.getElementById(
+        "joystick"
+    );
+
+const knob =
+    document.getElementById(
+        "joystickKnob"
+    );
+
+const joystickRadius =
+    48;
+
+function updateJoystick(
+    clientX,
+    clientY
+){
+
+    const rect =
+        joystick.getBoundingClientRect();
+
+    const cx =
+        rect.left+
+        rect.width/2;
+
+    const cy =
+        rect.top+
+        rect.height/2;
+
+    let dx =
+        clientX-cx;
+
+    let dy =
+        clientY-cy;
+
+    const dist =
+        Math.sqrt(
+            dx*dx+
+            dy*dy
+        );
+
+    if(dist>joystickRadius){
+
+        dx =
+            dx/dist*
+            joystickRadius;
+
+        dy =
+            dy/dist*
+            joystickRadius;
+
+    }
+
+    joystickX =
+        dx/
+        joystickRadius;
+
+    joystickY =
+        dy/
+        joystickRadius;
+
+    knob.style.transform =
         `translate(${dx}px,${dy}px)`;
+
 }
 
 function resetJoystick(){
 
-    joyX=0;
-    joyY=0;
-    joyActive=false;
+    joystickX=0;
 
-    knob.style.transform=
+    joystickY=0;
+
+    joystickActive=false;
+
+    knob.style.transform =
         "translate(0,0)";
+
 }
 
 joystick.addEventListener(
     "pointerdown",
     e=>{
 
-        joyActive=true;
+        joystickActive=true;
 
         joystick.setPointerCapture(
             e.pointerId
@@ -1028,6 +1819,7 @@ joystick.addEventListener(
             e.clientX,
             e.clientY
         );
+
     }
 );
 
@@ -1035,13 +1827,14 @@ joystick.addEventListener(
     "pointermove",
     e=>{
 
-        if(!joyActive)
+        if(!joystickActive)
             return;
 
         updateJoystick(
             e.clientX,
             e.clientY
         );
+
     }
 );
 
@@ -1053,82 +1846,6 @@ joystick.addEventListener(
 joystick.addEventListener(
     "pointercancel",
     resetJoystick
-);
-
-/* =========================================================
-   КАМЕРА ПАЛЬЦЕМ
-========================================================= */
-
-let cameraTouch=false;
-let lastX=0;
-let lastY=0;
-
-canvas.addEventListener(
-    "pointerdown",
-    e=>{
-
-        cameraTouch=true;
-
-        lastX=e.clientX;
-        lastY=e.clientY;
-    }
-);
-
-canvas.addEventListener(
-    "pointermove",
-    e=>{
-
-        if(!cameraTouch)
-            return;
-
-        const dx=
-            e.clientX-lastX;
-
-        const dy=
-            e.clientY-lastY;
-
-        lastX=e.clientX;
-        lastY=e.clientY;
-
-        yaw-=dx*.007;
-
-        pitch-=dy*.004;
-
-        pitch=
-            Math.max(
-                -.05,
-                Math.min(.75,pitch)
-            );
-    }
-);
-
-canvas.addEventListener(
-    "pointerup",
-    ()=>{
-        cameraTouch=false;
-    }
-);
-
-canvas.addEventListener(
-    "pointercancel",
-    ()=>{
-        cameraTouch=false;
-    }
-);
-
-/* =========================================================
-   ПРЫЖОК
-========================================================= */
-
-let jumpPressed=false;
-
-document
-.getElementById("jump")
-.addEventListener(
-    "pointerdown",
-    ()=>{
-        jumpPressed=true;
-    }
 );
 
 /* =========================================================
@@ -1141,9 +1858,6 @@ window.addEventListener(
     "keydown",
     e=>{
         keys[e.code]=true;
-
-        if(e.code==="Space")
-            jumpPressed=true;
     }
 );
 
@@ -1155,368 +1869,537 @@ window.addEventListener(
 );
 
 /* =========================================================
-   ГРАНИЦЫ
+   ПРЫЖОК
 ========================================================= */
 
-function canMove(x,z){
+let verticalVelocity=0;
 
-    const limit=
-        CITY/2-12;
+let grounded=true;
+
+const jumpButton =
+    document.getElementById(
+        "jump"
+    );
+
+function jump(){
+
+    if(!grounded)
+        return;
+
+    verticalVelocity =
+        JUMP_POWER;
+
+    grounded=false;
+
+}
+
+jumpButton.addEventListener(
+    "pointerdown",
+    jump
+);
+
+window.addEventListener(
+    "keydown",
+    e=>{
+
+        if(
+            e.code==="Space"
+        ){
+
+            jump();
+
+        }
+
+    }
+);
+
+/* =========================================================
+   КАМЕРА
+========================================================= */
+
+let cameraYaw=0;
+
+let cameraPitch=.28;
+
+let cameraDistance=7;
+
+let cameraTouching=false;
+
+let cameraLastX=0;
+
+let cameraLastY=0;
+
+function isControlElement(
+    target
+){
 
     return (
-        x>=-limit &&
-        x<=limit &&
-        z>=-limit &&
-        z<=limit
+        target===joystick ||
+        joystick.contains(target) ||
+        target===jumpButton
     );
+
 }
+
+renderer.domElement.addEventListener(
+    "pointerdown",
+    e=>{
+
+        if(
+            isControlElement(e.target)
+        )
+            return;
+
+        cameraTouching=true;
+
+        cameraLastX=
+            e.clientX;
+
+        cameraLastY=
+            e.clientY;
+
+    }
+);
+
+renderer.domElement.addEventListener(
+    "pointermove",
+    e=>{
+
+        if(!cameraTouching)
+            return;
+
+        const dx =
+            e.clientX-
+            cameraLastX;
+
+        const dy =
+            e.clientY-
+            cameraLastY;
+
+        cameraLastX=
+            e.clientX;
+
+        cameraLastY=
+            e.clientY;
+
+        cameraYaw -=
+            dx*.006;
+
+        cameraPitch -=
+            dy*.004;
+
+        cameraPitch =
+            THREE.MathUtils.clamp(
+                cameraPitch,
+                -.1,
+                .85
+            );
+
+    }
+);
+
+renderer.domElement.addEventListener(
+    "pointerup",
+    ()=>{
+        cameraTouching=false;
+    }
+);
+
+renderer.domElement.addEventListener(
+    "pointercancel",
+    ()=>{
+        cameraTouching=false;
+    }
+);
+
+/* =========================================================
+   КОЛЛИЗИИ
+========================================================= */
+
+function collides(
+    x,
+    z
+){
+
+    for(
+        const b of buildingColliders
+    ){
+
+        if(
+            x >
+            b.minX-COLLISION_PADDING &&
+            x <
+            b.maxX+COLLISION_PADDING &&
+            z >
+            b.minZ-COLLISION_PADDING &&
+            z <
+            b.maxZ+COLLISION_PADDING
+        ){
+
+            return true;
+
+        }
+
+    }
+
+    return false;
+
+}
+
+function movePlayer(
+    dx,
+    dz
+){
+
+    let nx =
+        player.position.x+
+        dx;
+
+    let nz =
+        player.position.z+
+        dz;
+
+    nx =
+        THREE.MathUtils.clamp(
+            nx,
+            -WORLD_LIMIT,
+            WORLD_LIMIT
+        );
+
+    nz =
+        THREE.MathUtils.clamp(
+            nz,
+            -WORLD_LIMIT,
+            WORLD_LIMIT
+        );
+
+    /* движение по X */
+
+    if(
+        !collides(
+            nx,
+            player.position.z
+        )
+    ){
+
+        player.position.x=
+            nx;
+
+    }
+
+    /* движение по Z */
+
+    if(
+        !collides(
+            player.position.x,
+            nz
+        )
+    ){
+
+        player.position.z=
+            nz;
+
+    }
+
+}
+
+/* =========================================================
+   ОСНОВНОЙ ЦИКЛ
+========================================================= */
+
+const clock =
+    new THREE.Clock();
+
+function animate(){
+
+    requestAnimationFrame(
+        animate
+    );
+
+    const delta =
+        Math.min(
+            clock.getDelta(),
+            .05
+        );
+
+    if(mixer){
+
+        mixer.update(delta);
+
+    }
+
+    /* движение */
+
+    let forward =
+        -joystickY;
+
+    let side =
+        joystickX;
+
+    if(keys["KeyW"] || keys["ArrowUp"])
+        forward += 1;
+
+    if(keys["KeyS"] || keys["ArrowDown"])
+        forward -= 1;
+
+    if(keys["KeyA"] || keys["ArrowLeft"])
+        side -= 1;
+
+    if(keys["KeyD"] || keys["ArrowRight"])
+        side += 1;
+
+    const length =
+        Math.sqrt(
+            forward*forward+
+            side*side
+        );
+
+    if(length>1){
+
+        forward/=length;
+
+        side/=length;
+
+    }
+
+    const moving =
+        length>.08;
+
+    const running =
+        keys["ShiftLeft"] ||
+        keys["ShiftRight"];
+
+    const speed =
+        PLAYER_SPEED*
+        (running
+            ? RUN_MULTIPLIER
+            : 1);
+
+    /* направление относительно камеры */
+
+    const sin =
+        Math.sin(cameraYaw);
+
+    const cos =
+        Math.cos(cameraYaw);
+
+    const moveX =
+        sin*forward+
+        cos*side;
+
+    const moveZ =
+        cos*forward-
+        sin*side;
+
+    if(moving){
+
+        movePlayer(
+            moveX*
+            speed*
+            delta,
+
+            moveZ*
+            speed*
+            delta
+        );
+
+        const targetRotation =
+            Math.atan2(
+                moveX,
+                moveZ
+            );
+
+        let diff =
+            targetRotation-
+            player.rotation.y;
+
+        diff =
+            Math.atan2(
+                Math.sin(diff),
+                Math.cos(diff)
+            );
+
+        player.rotation.y +=
+            diff*
+            Math.min(
+                1,
+                delta*10
+            );
+
+        if(
+            mixer &&
+            walkAction &&
+            runAction
+        ){
+
+            if(running)
+                setAction(runAction);
+            else
+                setAction(walkAction);
+
+        }
+
+    }else{
+
+        if(
+            mixer &&
+            idleAction
+        ){
+
+            setAction(
+                idleAction
+            );
+
+        }
+
+    }
+
+    /* =====================================================
+       ПРЫЖОК / ГРАВИТАЦИЯ
+    ===================================================== */
+
+    verticalVelocity +=
+        GRAVITY*
+        delta;
+
+    player.position.y +=
+        verticalVelocity*
+        delta;
+
+    if(
+        player.position.y<=0
+    ){
+
+        player.position.y=0;
+
+        verticalVelocity=0;
+
+        grounded=true;
+
+    }
+
+    /* =====================================================
+       КАМЕРА
+    ===================================================== */
+
+    const target =
+        new THREE.Vector3(
+            player.position.x,
+            player.position.y+2.0,
+            player.position.z
+        );
+
+    const horizontal =
+        cameraDistance*
+        Math.cos(
+            cameraPitch
+        );
+
+    const camX =
+        target.x-
+        Math.sin(cameraYaw)*
+        horizontal;
+
+    const camZ =
+        target.z-
+        Math.cos(cameraYaw)*
+        horizontal;
+
+    const camY =
+        target.y+
+        cameraDistance*
+        Math.sin(
+            cameraPitch
+        );
+
+    const desired =
+        new THREE.Vector3(
+            camX,
+            camY,
+            camZ
+        );
+
+    camera.position.lerp(
+        desired,
+        1-
+        Math.pow(
+            .001,
+            delta
+        )
+    );
+
+    camera.lookAt(
+        target
+    );
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+animate();
 
 /* =========================================================
    RESIZE
 ========================================================= */
 
-function resize(){
+window.addEventListener(
+    "resize",
+    ()=>{
+        
+        camera.aspect =
+            innerWidth/
+            innerHeight;
 
-    const dpr=
-        Math.min(
-            window.devicePixelRatio||1,
-            1.5
+        camera.updateProjectionMatrix();
+
+        renderer.setPixelRatio(
+            Math.min(
+                window.devicePixelRatio || 1,
+                1.5
+            )
         );
 
-    canvas.width=
-        Math.floor(innerWidth*dpr);
+        renderer.setSize(
+            innerWidth,
+            innerHeight,
+            false
+        );
 
-    canvas.height=
-        Math.floor(innerHeight*dpr);
+    }
+);
 
-    canvas.style.width=
-        innerWidth+"px";
+/* =========================================================
+   LANDSCAPE
+========================================================= */
 
-    canvas.style.height=
-        innerHeight+"px";
+function updateOrientation(){
 
-    gl.viewport(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
+    if(
+        innerHeight >
+        innerWidth
+    ){
+
+        hint.textContent =
+            "Поверните телефон горизонтально";
+
+    }else{
+
+        hint.textContent =
+            "Свайп справа — камера";
+
+    }
+
 }
 
 window.addEventListener(
     "resize",
-    resize
+    updateOrientation
 );
 
-window.addEventListener(
-    "orientationchange",
-    ()=>{
-        setTimeout(resize,100);
-    }
-);
-
-resize();
-
-/* =========================================================
-   РЕНДЕР
-========================================================= */
-
-function render(){
-
-    gl.clearColor(
-        .31,.38,.43,1
-    );
-
-    gl.clear(
-        gl.COLOR_BUFFER_BIT |
-        gl.DEPTH_BUFFER_BIT
-    );
-
-    gl.enable(gl.DEPTH_TEST);
-
-    const projection=
-        perspective(
-            Math.PI/3,
-            canvas.width/canvas.height,
-            .1,
-            1500
-        );
-
-    const cam=getCamera();
-
-    const view=
-        lookAt(
-            cam,
-            [
-                player.x,
-                player.y+2,
-                player.z
-            ],
-            [0,1,0]
-        );
-
-    gl.uniformMatrix4fv(
-        uProjection,
-        false,
-        projection
-    );
-
-    gl.uniformMatrix4fv(
-        uView,
-        false,
-        view
-    );
-
-    gl.uniform3f(
-        uLight,
-        -.5,
-        1,
-        .3
-    );
-
-    for(const mesh of meshes){
-
-        let model=
-            translation(
-                mesh.x,
-                mesh.y,
-                mesh.z
-            );
-
-        if(mesh.rot){
-
-            model=
-                multiply(
-                    model,
-                    rotationY(mesh.rot)
-                );
-        }
-
-        model=
-            multiply(
-                model,
-                scale(
-                    mesh.sx,
-                    mesh.sy,
-                    mesh.sz
-                )
-            );
-
-        gl.uniformMatrix4fv(
-            uModel,
-            false,
-            model
-        );
-
-        gl.bindBuffer(
-            gl.ARRAY_BUFFER,
-            mesh.positionBuffer
-        );
-
-        gl.enableVertexAttribArray(
-            aPosition
-        );
-
-        gl.vertexAttribPointer(
-            aPosition,
-            3,
-            gl.FLOAT,
-            false,
-            0,
-            0
-        );
-
-        gl.bindBuffer(
-            gl.ARRAY_BUFFER,
-            mesh.normalBuffer
-        );
-
-        gl.enableVertexAttribArray(
-            aNormal
-        );
-
-        gl.vertexAttribPointer(
-            aNormal,
-            3,
-            gl.FLOAT,
-            false,
-            0,
-            0
-        );
-
-        gl.bindBuffer(
-            gl.ARRAY_BUFFER,
-            mesh.colorBuffer
-        );
-
-        gl.enableVertexAttribArray(
-            aColor
-        );
-
-        gl.vertexAttribPointer(
-            aColor,
-            3,
-            gl.FLOAT,
-            false,
-            0,
-            0
-        );
-
-        gl.bindBuffer(
-            gl.ELEMENT_ARRAY_BUFFER,
-            mesh.indexBuffer
-        );
-
-        gl.drawElements(
-            gl.TRIANGLES,
-            36,
-            gl.UNSIGNED_SHORT,
-            0
-        );
-    }
-}
-
-/* =========================================================
-   ИГРОВОЙ ЦИКЛ
-========================================================= */
-
-let previous=
-    performance.now();
-
-function loop(now){
-
-    const dt=
-        Math.min(
-            (now-previous)/1000,
-            .05
-        );
-
-    previous=now;
-
-    /* Движение */
-
-    let forward=
-        -joyY;
-
-    let side=
-        joyX;
-
-    if(keys["KeyW"]||keys["ArrowUp"])
-        forward+=1;
-
-    if(keys["KeyS"]||keys["ArrowDown"])
-        forward-=1;
-
-    if(keys["KeyA"]||keys["ArrowLeft"])
-        side-=1;
-
-    if(keys["KeyD"]||keys["ArrowRight"])
-        side+=1;
-
-    const len=
-        Math.hypot(
-            forward,
-            side
-        );
-
-    if(len>1){
-
-        forward/=len;
-        side/=len;
-    }
-
-    const sin=Math.sin(yaw);
-    const cos=Math.cos(yaw);
-
-    /*
-       ВАЖНО:
-       Влево стика -> персонаж идёт влево.
-       Вправо стика -> персонаж идёт вправо.
-    */
-
-    const dx=
-        sin*forward+
-        cos*side;
-
-    const dz=
-        cos*forward-
-        sin*side;
-
-    const speed=18;
-
-    if(
-        Math.abs(dx)+
-        Math.abs(dz)>.01
-    ){
-
-        const nx=
-            player.x+
-            dx*speed*dt;
-
-        const nz=
-            player.z+
-            dz*speed*dt;
-
-        if(
-            canMove(
-                nx,
-                player.z
-            )
-        ){
-            player.x=nx;
-        }
-
-        if(
-            canMove(
-                player.x,
-                nz
-            )
-        ){
-            player.z=nz;
-        }
-
-        player.rot=
-            Math.atan2(dx,dz);
-    }
-
-    /* Прыжок */
-
-    player.vy+=
-        -38*dt;
-
-    player.y+=
-        player.vy*dt;
-
-    if(player.y<0){
-
-        player.y=0;
-        player.vy=0;
-    }
-
-    if(
-        jumpPressed &&
-        player.y<=.01
-    ){
-        player.vy=14;
-    }
-
-    jumpPressed=false;
-
-    /* Обновляем существующего персонажа */
-
-    updatePlayerMeshes();
-
-    render();
-
-    requestAnimationFrame(loop);
-}
-
-updatePlayerMeshes();
-
-requestAnimationFrame(loop);
-
-document.getElementById("title").textContent=
-    "АЧИНСК 3D • ИГРА ЗАПУЩЕНА";
+updateOrientation();
 
 </script>
 
