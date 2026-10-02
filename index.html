@@ -212,21 +212,13 @@ import {GLTFLoader} from
 ========================================================= */
 
 const CITY_SIZE = 1100;
-
 const PLAYER_SPEED = 20;
-
 const RUN_MULTIPLIER = 1.45;
-
 const GRAVITY = -42;
-
 const JUMP_POWER = 15;
-
 const COLLISION_PADDING = 1.8;
-
 const ROAD_WIDTH = 26;
-
 const ROAD_GAP = 190;
-
 const WORLD_LIMIT = CITY_SIZE / 2 - 12;
 
 /* =========================================================
@@ -536,8 +528,6 @@ function createRoad(
 
     scene.add(road);
 
-    /* бордюры */
-
     const curb1 =
         box(
             .7,
@@ -629,52 +619,12 @@ function road(
 
 }
 
-/* главные дороги */
-
-road(
-    0,
-    0,
-    ROAD_WIDTH,
-    CITY_SIZE
-);
-
-road(
-    0,
-    0,
-    ROAD_WIDTH,
-    CITY_SIZE,
-    Math.PI/2
-);
-
-road(
-    ROAD_GAP,
-    0,
-    20,
-    CITY_SIZE
-);
-
-road(
-    -ROAD_GAP,
-    0,
-    20,
-    CITY_SIZE
-);
-
-road(
-    0,
-    ROAD_GAP,
-    20,
-    CITY_SIZE,
-    Math.PI/2
-);
-
-road(
-    0,
-    -ROAD_GAP,
-    20,
-    CITY_SIZE,
-    Math.PI/2
-);
+road(0,0,ROAD_WIDTH,CITY_SIZE);
+road(0,0,ROAD_WIDTH,CITY_SIZE,Math.PI/2);
+road(ROAD_GAP,0,20,CITY_SIZE);
+road(-ROAD_GAP,0,20,CITY_SIZE);
+road(0,ROAD_GAP,20,CITY_SIZE,Math.PI/2);
+road(0,-ROAD_GAP,20,CITY_SIZE,Math.PI/2);
 
 /* =========================================================
    ДОРОЖНАЯ РАЗМЕТКА
@@ -745,11 +695,8 @@ function addCollider(
     buildingColliders.push({
 
         minX:x-w/2,
-
         maxX:x+w/2,
-
         minZ:z-d/2,
-
         maxZ:z+d/2
 
     });
@@ -909,8 +856,6 @@ function createBuilding(
 
     group.add(body);
 
-    /* крыша */
-
     const roof =
         box(
             w+.7,
@@ -923,8 +868,6 @@ function createBuilding(
         h+.11;
 
     group.add(roof);
-
-    /* вертикальные секции */
 
     if(w>18){
 
@@ -968,8 +911,6 @@ function createBuilding(
         w,
         d
     );
-
-    /* окна спереди */
 
     const rows =
         Math.max(
@@ -1028,8 +969,6 @@ function createBuilding(
         }
 
     }
-
-    /* окна с боков */
 
     for(
         let row=0;
@@ -1539,15 +1478,10 @@ player.position.set(
 scene.add(player);
 
 let character=null;
-
 let mixer=null;
-
 let idleAction=null;
-
 let walkAction=null;
-
 let runAction=null;
-
 let currentAction=null;
 
 const loader =
@@ -1721,9 +1655,7 @@ loader.load(
 ========================================================= */
 
 let joystickX=0;
-
 let joystickY=0;
-
 let joystickActive=false;
 
 const joystick =
@@ -1795,9 +1727,7 @@ function updateJoystick(
 function resetJoystick(){
 
     joystickX=0;
-
     joystickY=0;
-
     joystickActive=false;
 
     knob.style.transform =
@@ -1873,7 +1803,6 @@ window.addEventListener(
 ========================================================= */
 
 let verticalVelocity=0;
-
 let grounded=true;
 
 const jumpButton =
@@ -1918,15 +1847,10 @@ window.addEventListener(
 ========================================================= */
 
 let cameraYaw=0;
-
 let cameraPitch=.28;
-
 let cameraDistance=7;
-
 let cameraTouching=false;
-
 let cameraLastX=0;
-
 let cameraLastY=0;
 
 function isControlElement(
@@ -2073,8 +1997,6 @@ function movePlayer(
             WORLD_LIMIT
         );
 
-    /* движение по X */
-
     if(
         !collides(
             nx,
@@ -2086,8 +2008,6 @@ function movePlayer(
             nx;
 
     }
-
-    /* движение по Z */
 
     if(
         !collides(
@@ -2123,9 +2043,7 @@ function animate(){
         );
 
     if(mixer){
-
         mixer.update(delta);
-
     }
 
     /* движение */
@@ -2157,7 +2075,6 @@ function animate(){
     if(length>1){
 
         forward/=length;
-
         side/=length;
 
     }
@@ -2183,12 +2100,15 @@ function animate(){
     const cos =
         Math.cos(cameraYaw);
 
+    /* ИСПРАВЛЕНО:
+       горизонтальный джойстик больше не инвертирован */
+
     const moveX =
-        sin*forward+
+        sin*forward-
         cos*side;
 
     const moveZ =
-        cos*forward-
+        cos*forward+
         sin*side;
 
     if(moving){
@@ -2271,9 +2191,7 @@ function animate(){
     ){
 
         player.position.y=0;
-
         verticalVelocity=0;
-
         grounded=true;
 
     }
@@ -2348,7 +2266,7 @@ animate();
 window.addEventListener(
     "resize",
     ()=>{
-        
+
         camera.aspect =
             innerWidth/
             innerHeight;
