@@ -2399,34 +2399,33 @@ function updatePlayer(
     let forward = -joystickY;
 let side = joystickX;
 
-
 /* клавиатура */
 
-if(
+if (
     keys["KeyW"] ||
     keys["ArrowUp"]
-){
+) {
     forward = 1;
 }
 
-if(
+if (
     keys["KeyS"] ||
     keys["ArrowDown"]
-){
+) {
     forward = -1;
 }
 
-if(
+if (
     keys["KeyA"] ||
     keys["ArrowLeft"]
-){
+) {
     side = -1;
 }
 
-if(
+if (
     keys["KeyD"] ||
     keys["ArrowRight"]
-){
+) {
     side = 1;
 }
 
