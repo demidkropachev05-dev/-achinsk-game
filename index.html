@@ -17,404 +17,232 @@ html,body{
     width:100%;
     height:100%;
     overflow:hidden;
-    background:#101820;
+    background:#202b32;
     font-family:Arial,sans-serif;
 }
 
-#game{
+canvas{
     position:fixed;
     inset:0;
-}
-
-canvas{
-    display:block;
     width:100%;
     height:100%;
+    display:block;
 }
 
-#loading{
-    position:fixed;
-    inset:0;
-    z-index:100;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-    color:white;
-    background:#101820;
-    font-size:25px;
-    letter-spacing:2px;
-}
-
-#loading small{
-    margin-top:12px;
-    opacity:.6;
-    font-size:12px;
-    letter-spacing:0;
-}
-
-#portrait{
+#rotate{
     display:none;
     position:fixed;
     inset:0;
-    z-index:200;
+    z-index:100;
+    background:#182127;
+    color:white;
     align-items:center;
     justify-content:center;
+    flex-direction:column;
     text-align:center;
-    color:white;
-    background:#101820;
-    font-size:20px;
-}
-
-#hud{
-    position:fixed;
-    left:15px;
-    top:12px;
-    z-index:20;
-    color:white;
-    font-size:13px;
-    text-shadow:0 2px 5px #000;
-    pointer-events:none;
-}
-
-#joystick{
-    position:fixed;
-    left:max(18px,env(safe-area-inset-left));
-    bottom:max(18px,env(safe-area-inset-bottom));
-    width:140px;
-    height:140px;
-    border-radius:50%;
-    border:2px solid rgba(255,255,255,.25);
-    background:rgba(255,255,255,.09);
-    z-index:30;
-}
-
-#stick{
-    position:absolute;
-    width:62px;
-    height:62px;
-    left:37px;
-    top:37px;
-    border-radius:50%;
-    background:rgba(255,255,255,.32);
-    border:2px solid rgba(255,255,255,.55);
-}
-
-.button{
-    position:fixed;
-    z-index:30;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    border-radius:50%;
-    color:white;
-    font-weight:bold;
-    background:rgba(20,25,30,.65);
-    border:1px solid rgba(255,255,255,.3);
-    user-select:none;
-}
-
-#jump{
-    right:max(22px,env(safe-area-inset-right));
-    bottom:max(22px,env(safe-area-inset-bottom));
-    width:76px;
-    height:76px;
-}
-
-#run{
-    right:max(115px,calc(env(safe-area-inset-right) + 115px));
-    bottom:max(30px,env(safe-area-inset-bottom));
-    width:58px;
-    height:58px;
-    font-size:11px;
-}
-
-#run.active{
-    background:rgba(40,130,70,.75);
+    font-size:21px;
 }
 
 @media(orientation:portrait){
-
-    #portrait{
+    #rotate{
         display:flex;
     }
-
-    #game,
-    #hud,
-    #joystick,
-    #jump,
-    #run{
+    #gameUI{
         display:none;
     }
 }
 
-@media(max-width:700px) and (orientation:landscape){
+#gameUI{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+}
 
-    #joystick{
-        width:128px;
-        height:128px;
-    }
+#title{
+    position:absolute;
+    top:12px;
+    left:15px;
+    color:white;
+    font-size:13px;
+    font-weight:bold;
+    text-shadow:0 2px 5px #000;
+}
 
-    #stick{
-        width:58px;
-        height:58px;
-        left:33px;
-        top:33px;
-    }
+#joystick{
+    position:absolute;
+    left:20px;
+    bottom:20px;
+    width:132px;
+    height:132px;
+    border-radius:50%;
+    background:rgba(255,255,255,.08);
+    border:2px solid rgba(255,255,255,.28);
+    pointer-events:auto;
+}
 
-    #jump{
-        width:68px;
-        height:68px;
-    }
+#stick{
+    position:absolute;
+    width:58px;
+    height:58px;
+    left:35px;
+    top:35px;
+    border-radius:50%;
+    background:rgba(255,255,255,.3);
+    border:2px solid rgba(255,255,255,.5);
+}
 
-    #run{
-        right:102px;
-        width:54px;
-        height:54px;
-    }
+.button{
+    position:absolute;
+    pointer-events:auto;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-size:11px;
+    font-weight:bold;
+    background:rgba(15,20,24,.65);
+    border:1px solid rgba(255,255,255,.3);
+}
+
+#jump{
+    width:72px;
+    height:72px;
+    right:22px;
+    bottom:22px;
+}
+
+#run{
+    width:57px;
+    height:57px;
+    right:112px;
+    bottom:30px;
+}
+
+#run.active{
+    background:rgba(40,120,65,.8);
 }
 </style>
 </head>
 
 <body>
 
-<div id="game"></div>
+<canvas id="game"></canvas>
 
-<div id="loading">
-    АЧИНСК 3D
-    <small>Запуск города...</small>
+<div id="rotate">
+    <div style="font-size:45px">↻</div>
+    <div>Поверни телефон<br>горизонтально</div>
 </div>
 
-<div id="portrait">
-    Поверни телефон горизонтально<br><br>
-    ↻
-</div>
+<div id="gameUI">
 
-<div id="hud">
-    АЧИНСК 3D
-</div>
+    <div id="title">
+        АЧИНСК 3D
+    </div>
 
-<div id="joystick">
-    <div id="stick"></div>
-</div>
+    <div id="joystick">
+        <div id="stick"></div>
+    </div>
 
-<div id="run" class="button">
-    БЕГ
-</div>
+    <div id="run" class="button">
+        БЕГ
+    </div>
 
-<div id="jump" class="button">
-    ПРЫЖОК
-</div>
+    <div id="jump" class="button">
+        ПРЫЖОК
+    </div>
 
+</div>
 
 <script>
 "use strict";
-
 
 /* =========================================================
    CANVAS
 ========================================================= */
 
-const game =
-    document.getElementById("game");
-
 const canvas =
-    document.createElement("canvas");
-
-game.appendChild(canvas);
+    document.getElementById("game");
 
 const ctx =
     canvas.getContext("2d");
 
-
-if(!ctx){
-
-    document.getElementById("loading").innerHTML =
-        "ОШИБКА<br><small>Canvas не поддерживается</small>";
-
-    throw new Error("Canvas unavailable");
-}
-
-
-/* =========================================================
-   RESIZE
-========================================================= */
+let W=innerWidth;
+let H=innerHeight;
+let DPR=Math.min(devicePixelRatio||1,2);
 
 function resize(){
 
-    const dpr =
-        Math.min(
-            window.devicePixelRatio || 1,
-            2
-        );
+    W=innerWidth;
+    H=innerHeight;
 
-    canvas.width =
-        Math.floor(
-            innerWidth*dpr
-        );
+    DPR=Math.min(
+        devicePixelRatio||1,
+        2
+    );
 
-    canvas.height =
-        Math.floor(
-            innerHeight*dpr
-        );
+    canvas.width=
+        Math.floor(W*DPR);
 
-    canvas.style.width =
-        innerWidth+"px";
+    canvas.height=
+        Math.floor(H*DPR);
 
-    canvas.style.height =
-        innerHeight+"px";
+    canvas.style.width=W+"px";
+    canvas.style.height=H+"px";
 
     ctx.setTransform(
-        dpr,
-        0,
-        0,
-        dpr,
-        0,
-        0
+        DPR,0,0,DPR,0,0
     );
 }
 
 resize();
 
-window.addEventListener(
+addEventListener(
     "resize",
     resize
 );
 
-window.addEventListener(
-    "orientationchange",
-    ()=>{
-        setTimeout(resize,200);
-    }
-);
-
 
 /* =========================================================
-   3D МАТЕМАТИКА
-========================================================= */
+   КАРТА ГОРОДА
+=========================================================
 
-function rotatePoint(
-    x,
-    y,
-    z,
-    yaw,
-    pitch
-){
+   # = здание
+   . = дорога/земля
+   T = дерево
+*/
 
-    const cy =
-        Math.cos(yaw);
+const MAP=[
+"########################",
+"#......................#",
+"#..####.....####.......#",
+"#..#..#.....#..#...T...#",
+"#..#..#.....#..#.......#",
+"#..####.....####.......#",
+"#......................#",
+"#......####............#",
+"#......#..#............#",
+"#......#..#.....####...#",
+"#......####.....#..#...#",
+"#...............#..#...#",
+"#..T............####...#",
+"#......................#",
+"#....####..............#",
+"#....#..#..............#",
+"#....#..#........T.....#",
+"#....####..............#",
+"#......................#",
+"#......####.....####...#",
+"#......#..#.....#..#...#",
+"#......#..#.....#..#...#",
+"#......####.....####...#",
+"########################"
+];
 
-    const sy =
-        Math.sin(yaw);
+const MAP_W=24;
+const MAP_H=24;
 
-    let x1 =
-        x*cy -
-        z*sy;
-
-    let z1 =
-        x*sy +
-        z*cy;
-
-    const cp =
-        Math.cos(pitch);
-
-    const sp =
-        Math.sin(pitch);
-
-    let y1 =
-        y*cp -
-        z1*sp;
-
-    let z2 =
-        y*sp +
-        z1*cp;
-
-    return {
-        x:x1,
-        y:y1,
-        z:z2
-    };
-}
-
-
-function project(
-    x,
-    y,
-    z
-){
-
-    const camera =
-        rotatePoint(
-            x-player.x,
-            y-player.y-cameraHeight,
-            z-player.z,
-            -cameraYaw,
-            -cameraPitch
-        );
-
-    if(camera.z <= .2)
-        return null;
-
-    const scale =
-        focal /
-        camera.z;
-
-    return {
-        x:
-            screenW/2 +
-            camera.x*scale,
-
-        y:
-            screenH/2 -
-            camera.y*scale,
-
-        z:camera.z,
-
-        scale:scale
-    };
-}
-
-
-/* =========================================================
-   НАСТРОЙКИ
-========================================================= */
-
-let screenW =
-    innerWidth;
-
-let screenH =
-    innerHeight;
-
-let focal =
-    620;
-
-let cameraYaw =
-    0;
-
-let cameraPitch =
-    .32;
-
-let cameraHeight =
-    5.5;
-
-
-/* =========================================================
-   ИГРОК
-========================================================= */
-
-const player = {
-
-    x:0,
-    y:0,
-    z:55,
-
-    yaw:0,
-
-    velocityY:0,
-
-    grounded:true
-
-};
+const CELL=10;
 
 
 /* =========================================================
@@ -423,1172 +251,82 @@ const player = {
 
 const objects=[];
 
-
-function addBox(
-    x,
-    y,
-    z,
-    w,
-    h,
-    d,
-    color,
-    type="building"
-){
-
-    objects.push({
-
-        x,
-        y,
-        z,
-
-        w,
-        h,
-        d,
-
-        color,
-
-        type
-
-    });
-}
-
-
-/* =========================================================
-   ГОРОД
-========================================================= */
-
-function createCity(){
-
-    /* земля */
-
-    addBox(
-        0,
-        -1,
-        0,
-        1100,
-        2,
-        1100,
-        "#405044",
-        "ground"
-    );
-
-
-    /* дороги */
-
-    addBox(
-        0,
-        .01,
-        0,
-        1100,
-        .15,
-        30,
-        "#272b2e",
-        "road"
-    );
-
-    addBox(
-        0,
-        .02,
-        0,
-        30,
-        .16,
-        1100,
-        "#272b2e",
-        "road"
-    );
-
-
-    const roads=[
-        -180,
-        -90,
-        90,
-        180
-    ];
-
-
-    for(
-        const p of roads
-    ){
-
-        addBox(
-            0,
-            .02,
-            p,
-            900,
-            .15,
-            22,
-            "#292d30",
-            "road"
-        );
-
-        addBox(
-            p,
-            .02,
-            0,
-            22,
-            .15,
-            900,
-            "#292d30",
-            "road"
-        );
-    }
-
-
-    /* тротуары */
-
-    for(
-        const p of [
-            -180,
-            -90,
-            0,
-            90,
-            180
-        ]
-    ){
-
-        addBox(
-            0,
-            .12,
-            p-17,
-            900,
-            .2,
-            3,
-            "#85837d",
-            "sidewalk"
-        );
-
-        addBox(
-            0,
-            .12,
-            p+17,
-            900,
-            .2,
-            3,
-            "#85837d",
-            "sidewalk"
-        );
-
-        addBox(
-            p-17,
-            .12,
-            0,
-            3,
-            .2,
-            900,
-            "#85837d",
-            "sidewalk"
-        );
-
-        addBox(
-            p+17,
-            .12,
-            0,
-            3,
-            .2,
-            900,
-            "#85837d",
-            "sidewalk"
-        );
-    }
-
-
-    /* здания */
-
-    const colors=[
-        "#807970",
-        "#9b948a",
-        "#6f7477",
-        "#a69a8b",
-        "#73777a",
-        "#918a82"
-    ];
-
-
-    const blocks=[
-        [-130,-130],
-        [130,-130],
-        [-130,130],
-        [130,130],
-
-        [-300,-130],
-        [300,-130],
-        [-300,130],
-        [300,130],
-
-        [-130,-300],
-        [130,-300],
-        [-130,300],
-        [130,300],
-
-        [-300,-300],
-        [300,-300],
-        [-300,300],
-        [300,300]
-    ];
-
-
-    blocks.forEach(
-        (b,i)=>{
-
-            addBox(
-                b[0]-20,
-                9,
-                b[1],
-                35,
-                18,
-                42,
-                colors[i%colors.length],
-                "building"
-            );
-
-
-            addBox(
-                b[0]+25,
-                12,
-                b[1]+12,
-                32,
-                24,
-                35,
-                colors[(i+2)%colors.length],
-                "building"
-            );
-
-
-            addBox(
-                b[0],
-                7,
-                b[1]+47,
-                46,
-                14,
-                26,
-                colors[(i+3)%colors.length],
-                "building"
-            );
-        }
-    );
-
-
-    /* деревья */
-
-    for(
-        let i=-480;
-        i<=480;
-        i+=32
-    ){
-
-        if(
-            Math.abs(i)<55
-        )
-            continue;
-
-
-        addTree(
-            i,
-            25
-        );
-
-        addTree(
-            i,
-            -25
-        );
-
-        addTree(
-            25,
-            i
-        );
-
-        addTree(
-            -25,
-            i
-        );
-    }
-
-
-    /* машины */
-
-    for(
-        let i=0;
-        i<24;
-        i++
-    ){
-
-        const p =
-            -430 +
-            (i*73)%860;
-
-        if(i%2===0){
-
-            addCar(
-                p,
-                7,
-                0
-            );
-
-        }else{
-
-            addCar(
-                7,
-                p,
-                Math.PI/2
-            );
-        }
-    }
-}
-
-
-function addTree(
-    x,
-    z
-){
-
-    addBox(
-        x,
-        3,
-        z,
-        1,
-        6,
-        1,
-        "#513a28",
-        "treeTrunk"
-    );
-
-    addBox(
-        x,
-        7,
-        z,
-        5,
-        5,
-        5,
-        "#285331",
-        "tree"
-    );
-}
-
-
-function addCar(
-    x,
-    z,
-    rotation
-){
-
-    objects.push({
-
-        x,
-        y:1,
-        z,
-
-        w:3.8,
-        h:1.5,
-        d:7,
-
-        color:
-            ["#8d3531",
-             "#345675",
-             "#73777a",
-             "#b3b0a5"]
-            [
-                Math.floor(
-                    Math.random()*4
-                )
-            ],
-
-        type:"car",
-
-        rotation
-    });
-}
-
-
-createCity();
-
-
-/* =========================================================
-   ДОРОЖНАЯ РАЗМЕТКА
-========================================================= */
-
-const markings=[];
-
-
-for(
-    let i=-500;
-    i<=500;
-    i+=35
-){
-
-    markings.push({
-        x:i,
-        y:.12,
-        z:0,
-        w:14,
-        d:.3
-    });
-
-    markings.push({
-        x:0,
-        y:.13,
-        z:i,
-        w:.3,
-        d:14
-    });
-}
-
-
-/* =========================================================
-   РЕНДЕР КУБА
-========================================================= */
-
-function cubeCorners(o){
-
-    const x=o.x;
-    const y=o.y;
-    const z=o.z;
-
-    const w=o.w/2;
-    const h=o.h/2;
-    const d=o.d/2;
-
-    return [
-
-        [x-w,y-h,z-d],
-        [x+w,y-h,z-d],
-        [x+w,y+h,z-d],
-        [x-w,y+h,z-d],
-
-        [x-w,y-h,z+d],
-        [x+w,y-h,z+d],
-        [x+w,y+h,z+d],
-        [x-w,y+h,z+d]
-
-    ];
-}
-
-
-const faces=[
-    [0,1,2,3],
-    [5,4,7,6],
-    [4,0,3,7],
-    [1,5,6,2],
-    [3,2,6,7],
-    [4,5,1,0]
-];
-
-
-function shadeColor(
-    color,
-    amount
-){
-
-    let c =
-        color.replace("#","");
-
-    let r =
-        parseInt(
-            c.substring(0,2),
-            16
-        );
-
-    let g =
-        parseInt(
-            c.substring(2,4),
-            16
-        );
-
-    let b =
-        parseInt(
-            c.substring(4,6),
-            16
-        );
-
-
-    r=Math.max(
-        0,
-        Math.min(
-            255,
-            r*amount
-        )
-    );
-
-    g=Math.max(
-        0,
-        Math.min(
-            255,
-            g*amount
-        )
-    );
-
-    b=Math.max(
-        0,
-        Math.min(
-            255,
-            b*amount
-        )
-    );
-
-
-    return `rgb(
-        ${r|0},
-        ${g|0},
-        ${b|0}
-    )`;
-}
-
-
-function drawObject(
-    o
-){
-
-    const corners =
-        cubeCorners(o);
-
-    const pts =
-        corners.map(
-            p=>project(
-                p[0],
-                p[1],
-                p[2]
-            )
-        );
-
-
-    if(
-        pts.some(
-            p=>p===null
-        )
-    )
-        return;
-
-
-    const faceData=[];
-
-
-    faces.forEach(
-        (f,index)=>{
-
-            const p0=pts[f[0]];
-            const p1=pts[f[1]];
-            const p2=pts[f[2]];
-
-
-            const depth =
-                (
-                    p0.z+
-                    p1.z+
-                    p2.z+
-                    pts[f[3]].z
-                )/4;
-
-
-            faceData.push({
-                f,
-                depth,
-                shade:
-                    [
-                        .65,
-                        .78,
-                        .55,
-                        .72,
-                        1.0,
-                        .58
-                    ][index]
+for(let y=0;y<MAP_H;y++){
+
+    for(let x=0;x<MAP_W;x++){
+
+        const c=MAP[y][x];
+
+        if(c==="#"){
+
+            objects.push({
+                x:x,
+                y:y,
+                type:"building",
+                color:
+                    ((x+y)%3===0)
+                    ? "#77746e"
+                    : ((x+y)%3===1)
+                    ? "#8d877f"
+                    : "#696d70"
             });
         }
-    );
 
+        if(c==="T"){
 
-    faceData.sort(
-        (a,b)=>
-            b.depth-a.depth
-    );
-
-
-    for(
-        const face
-        of faceData
-    ){
-
-        const f=
-            face.f;
-
-
-        ctx.beginPath();
-
-        ctx.moveTo(
-            pts[f[0]].x,
-            pts[f[0]].y
-        );
-
-
-        for(
-            let i=1;
-            i<f.length;
-            i++
-        ){
-
-            ctx.lineTo(
-                pts[f[i]].x,
-                pts[f[i]].y
-            );
-        }
-
-
-        ctx.closePath();
-
-        ctx.fillStyle =
-            shadeColor(
-                o.color,
-                face.shade
-            );
-
-        ctx.fill();
-
-
-        ctx.strokeStyle =
-            "rgba(0,0,0,.12)";
-
-        ctx.lineWidth=1;
-
-        ctx.stroke();
-    }
-
-
-    /* окна */
-
-    if(
-        o.type==="building" &&
-        o.h>8
-    ){
-
-        drawWindows(o);
-    }
-
-
-    /* деревья */
-
-    if(
-        o.type==="tree"
-    ){
-
-        drawTreeDetail(o);
-    }
-
-
-    /* машина */
-
-    if(
-        o.type==="car"
-    ){
-
-        drawCarDetail(o);
-    }
-}
-
-
-/* =========================================================
-   ОКНА
-========================================================= */
-
-function drawWindows(o){
-
-    const floors =
-        Math.floor(
-            o.h/4
-        );
-
-    const cols =
-        Math.max(
-            2,
-            Math.floor(
-                o.w/4
-            )
-        );
-
-
-    for(
-        let floor=0;
-        floor<floors;
-        floor++
-    ){
-
-        for(
-            let col=0;
-            col<cols;
-            col++
-        ){
-
-            if(
-                (floor+col)%7===0
-            )
-                continue;
-
-
-            const x =
-                o.x-
-                o.w/2+
-                2+
-                col*4;
-
-
-            const y =
-                floor*4+
-                2.2;
-
-
-            const p =
-                project(
-                    x,
-                    y,
-                    o.z-o.d/2-.06
-                );
-
-
-            if(!p)
-                continue;
-
-
-            const size =
-                Math.max(
-                    2,
-                    10/p.z*100
-                );
-
-
-            ctx.fillStyle =
-                (floor+col)%3===0
-                ? "#273b46"
-                : "#7695a3";
-
-
-            ctx.fillRect(
-                p.x-size/2,
-                p.y-size/2,
-                size,
-                size
-            );
+            objects.push({
+                x:x,
+                y:y,
+                type:"tree"
+            });
         }
     }
 }
 
 
 /* =========================================================
-   ДЕРЕВО ДЕТАЛИ
+   ИГРОК
 ========================================================= */
 
-function drawTreeDetail(o){
+const player={
 
-    const p =
-        project(
-            o.x,
-            o.y+2,
-            o.z
-        );
+    x:3.5,
+    y:12,
 
-    if(!p)
-        return;
+    angle:0,
 
+    height:1.7,
 
-    const r =
-        Math.max(
-            3,
-            5/p.z*180
-        );
+    jump:0,
+    jumpVelocity:0,
 
-
-    ctx.beginPath();
-
-    ctx.arc(
-        p.x,
-        p.y,
-        r,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fillStyle=
-        "#315f38";
-
-    ctx.fill();
-}
+    grounded:true
+};
 
 
 /* =========================================================
-   МАШИНА ДЕТАЛЬ
+   КАМЕРА
 ========================================================= */
 
-function drawCarDetail(o){
+const FOV=
+    Math.PI/3;
 
-    const p =
-        project(
-            o.x,
-            o.y+1,
-            o.z
-        );
+const NUM_RAYS=420;
 
-    if(!p)
-        return;
+const MAX_DISTANCE=80;
 
-
-    const s =
-        Math.max(
-            3,
-            12/p.z*100
-        );
-
-
-    ctx.fillStyle=
-        "#20272c";
-
-
-    ctx.fillRect(
-        p.x-s*.55,
-        p.y-s*.35,
-        s*1.1,
-        s*.25
-    );
-}
-
-
-/* =========================================================
-   РАЗМЕТКА
-========================================================= */
-
-function drawMarkings(){
-
-    for(
-        const m
-        of markings
-    ){
-
-        const p =
-            project(
-                m.x,
-                m.y,
-                m.z
-            );
-
-        if(!p)
-            continue;
-
-
-        const p2 =
-            project(
-                m.x+m.w,
-                m.y,
-                m.z+m.d
-            );
-
-        if(!p2)
-            continue;
-
-
-        ctx.fillStyle=
-            "rgba(235,232,210,.8)";
-
-
-        ctx.fillRect(
-            p.x,
-            p.y,
-            Math.max(
-                2,
-                Math.abs(
-                    p2.x-p.x
-                )
-            ),
-            Math.max(
-                1,
-                Math.abs(
-                    p2.y-p.y
-                )
-            )
-        );
-    }
-}
-
-
-/* =========================================================
-   ПЕРСОНАЖ
-========================================================= */
-
-function drawPlayer(){
-
-    const base =
-        project(
-            player.x,
-            player.y,
-            player.z
-        );
-
-    if(!base)
-        return;
-
-
-    const scale =
-        230/base.z;
-
-
-    const h =
-        4.8*scale;
-
-
-    /* тень */
-
-    ctx.beginPath();
-
-    ctx.ellipse(
-        base.x,
-        base.y,
-        16*scale,
-        7*scale,
-        0,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fillStyle=
-        "rgba(0,0,0,.35)";
-
-    ctx.fill();
-
-
-    /* ноги */
-
-    ctx.fillStyle=
-        "#20242b";
-
-
-    ctx.fillRect(
-        base.x-11*scale,
-        base.y-h*.42,
-        9*scale,
-        h*.43
-    );
-
-
-    ctx.fillRect(
-        base.x+2*scale,
-        base.y-h*.42,
-        9*scale,
-        h*.43
-    );
-
-
-    /* корпус */
-
-    ctx.fillStyle=
-        "#303943";
-
-
-    ctx.fillRect(
-        base.x-17*scale,
-        base.y-h*.80,
-        34*scale,
-        h*.42
-    );
-
-
-    /* руки */
-
-    ctx.fillStyle=
-        "#303943";
-
-
-    ctx.fillRect(
-        base.x-25*scale,
-        base.y-h*.77,
-        7*scale,
-        28*scale
-    );
-
-
-    ctx.fillRect(
-        base.x+18*scale,
-        base.y-h*.77,
-        7*scale,
-        28*scale
-    );
-
-
-    /* голова */
-
-    ctx.beginPath();
-
-    ctx.arc(
-        base.x,
-        base.y-h*.92,
-        12*scale,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fillStyle=
-        "#c58e70";
-
-    ctx.fill();
-
-
-    /* волосы */
-
-    ctx.beginPath();
-
-    ctx.arc(
-        base.x,
-        base.y-h*1.0,
-        12*scale,
-        Math.PI,
-        Math.PI*2
-    );
-
-    ctx.fillStyle=
-        "#202020";
-
-    ctx.fill();
-}
-
-
-/* =========================================================
-   СОРТИРОВКА
-========================================================= */
-
-function render(){
-
-    screenW=
-        innerWidth;
-
-    screenH=
-        innerHeight;
-
-
-    ctx.clearRect(
-        0,
-        0,
-        screenW,
-        screenH
-    );
-
-
-    /* небо */
-
-    const gradient =
-        ctx.createLinearGradient(
-            0,
-            0,
-            0,
-            screenH
-        );
-
-
-    gradient.addColorStop(
-        0,
-        "#687b89"
-    );
-
-    gradient.addColorStop(
-        .55,
-        "#9ba7ab"
-    );
-
-    gradient.addColorStop(
-        1,
-        "#59665f"
-    );
-
-
-    ctx.fillStyle=
-        gradient;
-
-    ctx.fillRect(
-        0,
-        0,
-        screenW,
-        screenH
-    );
-
-
-    /* дальний туман */
-
-    const sorted =
-        objects
-        .map(
-            o=>{
-
-                const dx=
-                    o.x-player.x;
-
-                const dz=
-                    o.z-player.z;
-
-                return {
-                    object:o,
-                    depth:
-                        dx*dx+
-                        dz*dz
-                };
-            }
-        )
-        .sort(
-            (a,b)=>
-                b.depth-a.depth
-        );
-
-
-    drawMarkings();
-
-
-    for(
-        const item
-        of sorted
-    ){
-
-        drawObject(
-            item.object
-        );
-    }
-
-
-    drawPlayer();
-
-
-    /* виньетка */
-
-    const vignette =
-        ctx.createRadialGradient(
-            screenW/2,
-            screenH/2,
-            screenH*.15,
-            screenW/2,
-            screenH/2,
-            screenH*.8
-        );
-
-
-    vignette.addColorStop(
-        0,
-        "rgba(0,0,0,0)"
-    );
-
-    vignette.addColorStop(
-        1,
-        "rgba(0,0,0,.35)"
-    );
-
-
-    ctx.fillStyle=
-        vignette;
-
-    ctx.fillRect(
-        0,
-        0,
-        screenW,
-        screenH
-    );
-}
+const projectionScale=
+    1/Math.tan(FOV/2);
 
 
 /* =========================================================
    УПРАВЛЕНИЕ
 ========================================================= */
 
-let joystickX=0;
-let joystickY=0;
+let joyX=0;
+let joyY=0;
+
+let running=false;
 
 const joystick=
     document.getElementById(
@@ -1601,71 +339,53 @@ const stick=
     );
 
 
-function updateJoystick(
-    x,
-    y
+function joystickMove(
+    px,
+    py
 ){
 
     const r=
         joystick.getBoundingClientRect();
 
-
     const cx=
-        r.left+
-        r.width/2;
-
+        r.left+r.width/2;
 
     const cy=
-        r.top+
-        r.height/2;
-
+        r.top+r.height/2;
 
     let dx=
-        x-cx;
+        px-cx;
 
     let dy=
-        y-cy;
-
+        py-cy;
 
     const max=
-        r.width*.34;
+        r.width*.33;
 
+    const len=
+        Math.hypot(dx,dy);
 
-    const length=
-        Math.hypot(
-            dx,
-            dy
-        );
-
-
-    if(length>max){
+    if(len>max){
 
         dx=
-            dx/length*
-            max;
+            dx/len*max;
 
         dy=
-            dy/length*
-            max;
+            dy/len*max;
     }
 
-
-    joystickX=
-        dx/max;
-
-    joystickY=
-        dy/max;
-
+    joyX=dx/max;
+    joyY=dy/max;
 
     stick.style.transform=
         `translate(${dx}px,${dy}px)`;
 }
 
 
-function resetJoystick(){
+function joystickReset(){
 
-    joystickX=0;
-    joystickY=0;
+    joyX=0;
+    joyY=0;
 
     stick.style.transform=
         "translate(0,0)";
@@ -1676,41 +396,37 @@ joystick.addEventListener(
     "pointerdown",
     e=>{
 
-        e.preventDefault();
-
         joystick.setPointerCapture(
             e.pointerId
         );
 
-        updateJoystick(
+        joystickMove(
             e.clientX,
             e.clientY
         );
     }
 );
 
-
 joystick.addEventListener(
     "pointermove",
     e=>{
 
         if(e.buttons)
-            updateJoystick(
+            joystickMove(
                 e.clientX,
                 e.clientY
             );
     }
 );
 
-
 joystick.addEventListener(
     "pointerup",
-    resetJoystick
+    joystickReset
 );
 
 joystick.addEventListener(
     "pointercancel",
-    resetJoystick
+    joystickReset
 );
 
 
@@ -1718,30 +434,22 @@ joystick.addEventListener(
    БЕГ
 ========================================================= */
 
-let running=false;
-
 const runButton=
     document.getElementById(
         "run"
     );
 
-
 runButton.addEventListener(
     "pointerdown",
-    e=>{
-
-        e.preventDefault();
-
+    ()=>{
         running=true;
-
         runButton.classList.add(
             "active"
         );
     }
 );
 
-
-function stopRun(){
+function stopRunning(){
 
     running=false;
 
@@ -1750,15 +458,14 @@ function stopRun(){
     );
 }
 
-
 runButton.addEventListener(
     "pointerup",
-    stopRun
+    stopRunning
 );
 
 runButton.addEventListener(
     "pointercancel",
-    stopRun
+    stopRunning
 );
 
 
@@ -1770,42 +477,34 @@ document
 .getElementById("jump")
 .addEventListener(
     "pointerdown",
-    e=>{
+    ()=>{
 
-        e.preventDefault();
+        if(player.grounded){
 
-        if(
-            player.grounded
-        ){
+            player.jumpVelocity=
+                5.8;
 
-            player.velocityY=
-                12;
-
-            player.grounded=
-                false;
+            player.grounded=false;
         }
     }
 );
 
 
 /* =========================================================
-   КАМЕРА
+   ПОВОРОТ КАМЕРЫ
 ========================================================= */
 
-let cameraTouch=false;
-
-let lastX=0;
-let lastY=0;
-
+let looking=false;
+let lastLookX=0;
 
 canvas.addEventListener(
     "pointerdown",
     e=>{
 
-        cameraTouch=true;
+        looking=true;
 
-        lastX=e.clientX;
-        lastY=e.clientY;
+        lastLookX=
+            e.clientX;
 
         canvas.setPointerCapture(
             e.pointerId
@@ -1813,112 +512,993 @@ canvas.addEventListener(
     }
 );
 
-
 canvas.addEventListener(
     "pointermove",
     e=>{
 
-        if(!cameraTouch)
+        if(!looking)
             return;
 
-
         const dx=
-            e.clientX-lastX;
+            e.clientX-lastLookX;
 
-        const dy=
-            e.clientY-lastY;
+        lastLookX=
+            e.clientX;
 
-
-        lastX=e.clientX;
-        lastY=e.clientY;
-
-
-        cameraYaw-=
-            dx*.006;
-
-
-        cameraPitch-=
-            dy*.004;
-
-
-        cameraPitch=
-            Math.max(
-                .12,
-                Math.min(
-                    .8,
-                    cameraPitch
-                )
-            );
+        player.angle+=
+            dx*.004;
     }
 );
-
 
 canvas.addEventListener(
     "pointerup",
     ()=>{
-        cameraTouch=false;
+        looking=false;
     }
 );
-
 
 canvas.addEventListener(
     "pointercancel",
     ()=>{
-        cameraTouch=false;
+        looking=false;
     }
 );
 
 
 /* =========================================================
-   КЛАВИАТУРА
+   КОЛЛИЗИЯ
 ========================================================= */
 
-const keys={};
+function solid(
+    x,
+    y
+){
+
+    if(
+        x<0 ||
+        y<0 ||
+        x>=MAP_W ||
+        y>=MAP_H
+    )
+        return true;
+
+    return MAP[
+        Math.floor(y)
+    ][
+        Math.floor(x)
+    ]==="#";
+}
 
 
-window.addEventListener(
-    "keydown",
-    e=>{
+function canMove(
+    x,
+    y
+){
 
-        keys[e.code]=true;
+    const r=.22;
 
-        if(
-            e.code==="ShiftLeft"
-        )
-            running=true;
-
-
-        if(
-            e.code==="Space" &&
-            player.grounded
-        ){
-
-            player.velocityY=
-                12;
-
-            player.grounded=
-                false;
-        }
-    }
-);
-
-
-window.addEventListener(
-    "keyup",
-    e=>{
-
-        keys[e.code]=false;
-
-        if(
-            e.code==="ShiftLeft"
-        )
-            running=false;
-    }
-);
+    return !(
+        solid(x-r,y-r) ||
+        solid(x+r,y-r) ||
+        solid(x-r,y+r) ||
+        solid(x+r,y+r)
+    );
+}
 
 
 /* =========================================================
-   ФИЗИКА
+   RAYCAST
+========================================================= */
+
+function castRay(angle){
+
+    const sin=
+        Math.sin(angle);
+
+    const cos=
+        Math.cos(angle);
+
+    let x=
+        player.x;
+
+    let y=
+        player.y;
+
+    let distance=0;
+
+    const step=.055;
+
+    while(
+        distance<
+        MAX_DISTANCE
+    ){
+
+        x+=cos*step;
+        y+=sin*step;
+
+        distance+=step;
+
+        if(solid(x,y)){
+
+            return {
+                distance,
+                x,
+                y
+            };
+        }
+    }
+
+    return {
+        distance:MAX_DISTANCE,
+        x,
+        y
+    };
+}
+
+
+/* =========================================================
+   НЕБО И ЗЕМЛЯ
+========================================================= */
+
+function drawSky(){
+
+    const sky=
+        ctx.createLinearGradient(
+            0,0,
+            0,H*.58
+        );
+
+    sky.addColorStop(
+        0,
+        "#4f6878"
+    );
+
+    sky.addColorStop(
+        .55,
+        "#91a2aa"
+    );
+
+    sky.addColorStop(
+        1,
+        "#c2c0b3"
+    );
+
+    ctx.fillStyle=sky;
+
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H*.58
+    );
+
+
+    const ground=
+        ctx.createLinearGradient(
+            0,H*.48,
+            0,H
+        );
+
+    ground.addColorStop(
+        0,
+        "#59615b"
+    );
+
+    ground.addColorStop(
+        1,
+        "#272b29"
+    );
+
+    ctx.fillStyle=ground;
+
+    ctx.fillRect(
+        0,
+        H*.48,
+        W,
+        H*.52
+    );
+}
+
+
+/* =========================================================
+   РИСОВАНИЕ СТЕН
+========================================================= */
+
+function drawWalls(){
+
+    const step=
+        W/NUM_RAYS;
+
+    const wallDepth=[];
+
+    for(
+        let ray=0;
+        ray<NUM_RAYS;
+        ray++
+    ){
+
+        const cameraX=
+            ray/NUM_RAYS-.5;
+
+        const rayAngle=
+            player.angle+
+            cameraX*FOV;
+
+        const hit=
+            castRay(rayAngle);
+
+        let dist=
+            hit.distance;
+
+        /* устраняем fish-eye */
+
+        dist*=
+            Math.cos(
+                rayAngle-player.angle
+            );
+
+        wallDepth[ray]=dist;
+
+        const wallHeight=
+            H/
+            Math.max(
+                .01,
+                dist
+            )*
+            .92;
+
+
+        const top=
+            H*.5-
+            wallHeight*
+            (
+                .48+
+                player.jump*.08
+            );
+
+
+        const bottom=
+            H*.5+
+            wallHeight*
+            (
+                .52+
+                player.jump*.08
+            );
+
+
+        let shade=
+            1-
+            dist/70;
+
+
+        shade=
+            Math.max(
+                .25,
+                Math.min(
+                    1,
+                    shade
+                )
+            );
+
+
+        const mapX=
+            Math.floor(hit.x);
+
+        const mapY=
+            Math.floor(hit.y);
+
+
+        const obj=
+            objects.find(
+                o=>
+                    o.x===mapX &&
+                    o.y===mapY
+            );
+
+
+        let base=
+            obj
+            ? obj.color
+            : "#777";
+
+
+        if(
+            hit.x-
+            Math.floor(hit.x)
+            <.04 ||
+            hit.y-
+            Math.floor(hit.y)
+            <.04
+        ){
+
+            shade*=.82;
+        }
+
+
+        ctx.fillStyle=
+            darken(
+                base,
+                shade
+            );
+
+
+        ctx.fillRect(
+            ray*step,
+            top,
+            step+1,
+            bottom-top
+        );
+
+
+        /* этажные линии */
+
+        if(
+            obj &&
+            obj.type==="building"
+        ){
+
+            const floors=
+                Math.max(
+                    2,
+                    Math.min(
+                        6,
+                        2+
+                        ((mapX*7+
+                          mapY*3)%5)
+                    )
+                );
+
+
+            for(
+                let f=1;
+                f<floors;
+                f++
+            ){
+
+                const yy=
+                    top+
+                    (bottom-top)*
+                    f/floors;
+
+
+                ctx.fillStyle=
+                    "rgba(35,38,38,.2)";
+
+                ctx.fillRect(
+                    ray*step,
+                    yy,
+                    step+1,
+                    1
+                );
+            }
+        }
+    }
+
+    return wallDepth;
+}
+
+
+/* =========================================================
+   ЦВЕТ
+========================================================= */
+
+function darken(
+    hex,
+    amount
+){
+
+    let c=
+        hex.replace("#","");
+
+    let r=
+        parseInt(
+            c.substring(0,2),
+            16
+        );
+
+    let g=
+        parseInt(
+            c.substring(2,4),
+            16
+        );
+
+    let b=
+        parseInt(
+            c.substring(4,6),
+            16
+        );
+
+    r=Math.floor(r*amount);
+    g=Math.floor(g*amount);
+    b=Math.floor(b*amount);
+
+    return `rgb(${r},${g},${b})`;
+}
+
+
+/* =========================================================
+   ОКНА
+========================================================= */
+
+function drawWindows(){
+
+    for(
+        const o of objects
+    ){
+
+        if(
+            o.type!=="building"
+        )
+            continue;
+
+        const dx=
+            o.x+.5-player.x;
+
+        const dy=
+            o.y+.5-player.y;
+
+        const dist=
+            Math.hypot(dx,dy);
+
+        if(dist>24)
+            continue;
+
+        let angle=
+            Math.atan2(
+                dy,
+                dx
+            )-
+            player.angle;
+
+        while(
+            angle<-Math.PI
+        )
+            angle+=Math.PI*2;
+
+        while(
+            angle>Math.PI
+        )
+            angle-=Math.PI*2;
+
+        if(
+            Math.abs(angle)>
+            FOV*.6
+        )
+            continue;
+
+        const screenX=
+            W/2+
+            angle/FOV*W;
+
+        const scale=
+            H/(dist*8);
+
+        const floors=
+            3+
+            ((o.x+
+              o.y)%3);
+
+        const cols=3;
+
+
+        for(
+            let f=0;
+            f<floors;
+            f++
+        ){
+
+            for(
+                let c=0;
+                c<cols;
+                c++
+            ){
+
+                const wx=
+                    screenX+
+                    (c-1)*
+                    scale*2.2;
+
+                const wy=
+                    H*.52-
+                    f*
+                    scale*2.7-
+                    scale*2;
+
+
+                const size=
+                    Math.max(
+                        2,
+                        scale*1.35
+                    );
+
+
+                ctx.fillStyle=
+                    (
+                        (f+c+
+                         Math.floor(o.x))
+                        %4===0
+                    )
+                    ? "#d6bd72"
+                    : "#405766";
+
+
+                ctx.fillRect(
+                    wx-size/2,
+                    wy-size/2,
+                    size,
+                    size*1.2
+                );
+            }
+        }
+    }
+}
+
+
+/* =========================================================
+   ДЕРЕВЬЯ
+========================================================= */
+
+function drawTrees(){
+
+    for(
+        const o of objects
+    ){
+
+        if(
+            o.type!=="tree"
+        )
+            continue;
+
+        const dx=
+            o.x+.5-player.x;
+
+        const dy=
+            o.y+.5-player.y;
+
+        const dist=
+            Math.hypot(dx,dy);
+
+        if(dist>35)
+            continue;
+
+        let angle=
+            Math.atan2(
+                dy,
+                dx
+            )-
+            player.angle;
+
+        while(
+            angle<-Math.PI
+        )
+            angle+=Math.PI*2;
+
+        while(
+            angle>Math.PI
+        )
+            angle-=Math.PI*2;
+
+        if(
+            Math.abs(angle)>
+            FOV*.65
+        )
+            continue;
+
+        const sx=
+            W/2+
+            angle/FOV*W;
+
+        const size=
+            H/(dist*1.8);
+
+
+        const ground=
+            H*.54+
+            player.jump*8;
+
+
+        /* ствол */
+
+        ctx.fillStyle=
+            "#4a3525";
+
+        ctx.fillRect(
+            sx-size*.09,
+            ground-size*.62,
+            size*.18,
+            size*.62
+        );
+
+
+        /* крона */
+
+        ctx.fillStyle=
+            "#294e31";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            sx,
+            ground-size*.7,
+            size*.35,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+
+        ctx.fillStyle=
+            "#37643b";
+
+        ctx.beginPath();
+
+        ctx.arc(
+            sx-size*.16,
+            ground-size*.82,
+            size*.23,
+            0,
+            Math.PI*2
+        );
+
+        ctx.fill();
+    }
+}
+
+
+/* =========================================================
+   ДОРОГА
+========================================================= */
+
+function drawRoadDetails(){
+
+    const horizon=
+        H*.5;
+
+    ctx.strokeStyle=
+        "rgba(225,220,195,.75)";
+
+    ctx.lineWidth=2;
+
+
+    for(
+        let i=-8;
+        i<=8;
+        i++
+    ){
+
+        const x=
+            W/2+
+            i*W/9;
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            W/2,
+            horizon
+        );
+
+        ctx.lineTo(
+            x,
+            H
+        );
+
+        ctx.stroke();
+    }
+}
+
+
+/* =========================================================
+   МАШИНЫ
+========================================================= */
+
+function drawCars(){
+
+    const cars=[
+        {
+            x:8.5,
+            y:12.4,
+            color:"#9b3936"
+        },
+        {
+            x:14.2,
+            y:12.7,
+            color:"#34516b"
+        }
+    ];
+
+
+    for(
+        const car of cars
+    ){
+
+        const dx=
+            car.x-player.x;
+
+        const dy=
+            car.y-player.y;
+
+        const dist=
+            Math.hypot(dx,dy);
+
+        if(dist>30)
+            continue;
+
+        let a=
+            Math.atan2(
+                dy,
+                dx
+            )-
+            player.angle;
+
+        while(a<-Math.PI)
+            a+=Math.PI*2;
+
+        while(a>Math.PI)
+            a-=Math.PI*2;
+
+        if(
+            Math.abs(a)>
+            FOV*.55
+        )
+            continue;
+
+        const sx=
+            W/2+
+            a/FOV*W;
+
+        const size=
+            H/(dist*1.5);
+
+        const ground=
+            H*.57;
+
+
+        ctx.fillStyle=
+            car.color;
+
+        ctx.fillRect(
+            sx-size*.5,
+            ground-size*.32,
+            size,
+            size*.3
+        );
+
+        ctx.fillStyle=
+            "#202a2f";
+
+        ctx.fillRect(
+            sx-size*.32,
+            ground-size*.5,
+            size*.64,
+            size*.2
+        );
+    }
+}
+
+
+/* =========================================================
+   ПЕРСОНАЖ
+========================================================= */
+
+function drawPlayer(){
+
+    /*
+       Персонаж находится снизу экрана.
+       Это временная модель.
+       Дальше заменим её на полноценную
+       3D-модель человека.
+    */
+
+    const bob=
+        Math.sin(
+            performance.now()/100
+        )*
+        (
+            Math.abs(joyX)+
+            Math.abs(joyY)
+        )*
+        2;
+
+
+    const cx=
+        W/2;
+
+    const ground=
+        H*.94+
+        bob+
+        player.jump*18;
+
+    const s=
+        Math.min(
+            W,H
+        )/500;
+
+
+    /* тень */
+
+    ctx.fillStyle=
+        "rgba(0,0,0,.4)";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        cx,
+        ground,
+        38*s,
+        10*s,
+        0,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+
+    /* ноги */
+
+    ctx.fillStyle=
+        "#1d2329";
+
+    ctx.fillRect(
+        cx-19*s,
+        ground-75*s,
+        15*s,
+        72*s
+    );
+
+    ctx.fillRect(
+        cx+4*s,
+        ground-75*s,
+        15*s,
+        72*s
+    );
+
+
+    /* корпус */
+
+    ctx.fillStyle=
+        "#303942";
+
+    ctx.fillRect(
+        cx-30*s,
+        ground-155*s,
+        60*s,
+        83*s
+    );
+
+
+    /* руки */
+
+    ctx.fillStyle=
+        "#303942";
+
+    ctx.fillRect(
+        cx-43*s,
+        ground-148*s,
+        13*s,
+        67*s
+    );
+
+    ctx.fillRect(
+        cx+30*s,
+        ground-148*s,
+        13*s,
+        67*s
+    );
+
+
+    /* шея */
+
+    ctx.fillStyle=
+        "#bd8569";
+
+    ctx.fillRect(
+        cx-8*s,
+        ground-174*s,
+        16*s,
+        24*s
+    );
+
+
+    /* голова */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        cx,
+        ground-198*s,
+        29*s,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fillStyle=
+        "#c58b6e";
+
+    ctx.fill();
+
+
+    /* волосы */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        cx,
+        ground-210*s,
+        29*s,
+        Math.PI,
+        Math.PI*2
+    );
+
+    ctx.fillStyle=
+        "#24201d";
+
+    ctx.fill();
+
+
+    /* шов куртки */
+
+    ctx.strokeStyle=
+        "rgba(255,255,255,.12)";
+
+    ctx.lineWidth=
+        2*s;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        cx,
+        ground-153*s
+    );
+
+    ctx.lineTo(
+        cx,
+        ground-76*s
+    );
+
+    ctx.stroke();
+}
+
+
+/* =========================================================
+   ПРИЦЕЛ / ЦЕНТР
+========================================================= */
+
+function drawCrosshair(){
+
+    ctx.strokeStyle=
+        "rgba(255,255,255,.3)";
+
+    ctx.lineWidth=1;
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        W/2-5,
+        H/2
+    );
+
+    ctx.lineTo(
+        W/2+5,
+        H/2
+    );
+
+    ctx.moveTo(
+        W/2,
+        H/2-5
+    );
+
+    ctx.lineTo(
+        W/2,
+        H/2+5
+    );
+
+    ctx.stroke();
+}
+
+
+/* =========================================================
+   ИГРОВОЙ ЦИКЛ
 ========================================================= */
 
 let previous=
@@ -1930,195 +1510,124 @@ function update(){
     const now=
         performance.now();
 
-
     const dt=
         Math.min(
-            (now-previous)/1000,
-            .05
+            .05,
+            (now-previous)/1000
         );
-
 
     previous=now;
 
 
     let x=
-        joystickX;
+        joyX;
 
     let y=
-        -joystickY;
+        -joyY;
 
 
-    if(
-        keys.KeyA ||
-        keys.ArrowLeft
-    )
-        x=-1;
+    const length=
+        Math.hypot(x,y);
 
+    if(length>1){
 
-    if(
-        keys.KeyD ||
-        keys.ArrowRight
-    )
-        x=1;
-
-
-    if(
-        keys.KeyW ||
-        keys.ArrowUp
-    )
-        y=1;
-
-
-    if(
-        keys.KeyS ||
-        keys.ArrowDown
-    )
-        y=-1;
-
-
-    const len=
-        Math.hypot(
-            x,
-            y
-        );
-
-
-    if(len>1){
-
-        x/=len;
-        y/=len;
+        x/=length;
+        y/=length;
     }
-
-
-    /* движение относительно камеры */
-
-    const sin=
-        Math.sin(
-            cameraYaw
-        );
-
-    const cos=
-        Math.cos(
-            cameraYaw
-        );
-
-
-    const forwardX=
-        sin;
-
-    const forwardZ=
-        -cos;
-
-
-    const rightX=
-        cos;
-
-    const rightZ=
-        sin;
-
-
-    const moveX=
-        forwardX*y+
-        rightX*x;
-
-
-    const moveZ=
-        forwardZ*y+
-        rightZ*x;
 
 
     const speed=
         running
-        ? 22
-        : 13;
+        ? 4.7
+        : 2.7;
 
 
-    player.x+=
-        moveX*
+    const moveX=
+        (
+            Math.cos(
+                player.angle
+            )*x+
+            Math.cos(
+                player.angle+
+                Math.PI/2
+            )*y
+        )*
         speed*
         dt;
 
 
-    player.z+=
-        moveZ*
+    const moveY=
+        (
+            Math.sin(
+                player.angle
+            )*x+
+            Math.sin(
+                player.angle+
+                Math.PI/2
+            )*y
+        )*
         speed*
         dt;
 
 
-    if(
-        len>.05
-    ){
+    const nx=
+        player.x+
+        moveX;
 
-        player.yaw=
-            Math.atan2(
-                moveX,
-                moveZ
-            );
-    }
+    const ny=
+        player.y+
+        moveY;
 
 
-    /* границы */
+    if(canMove(nx,player.y))
+        player.x=nx;
 
-    player.x=
-        Math.max(
-            -520,
-            Math.min(
-                520,
-                player.x
-            )
-        );
-
-
-    player.z=
-        Math.max(
-            -520,
-            Math.min(
-                520,
-                player.z
-            )
-        );
+    if(canMove(player.x,ny))
+        player.y=ny;
 
 
     /* прыжок */
 
-    player.velocityY-=
-        32*dt;
+    if(!player.grounded){
 
+        player.jump+=
+            player.jumpVelocity*
+            dt;
 
-    player.y+=
-        player.velocityY*
-        dt;
+        player.jumpVelocity-=
+            15*
+            dt;
 
+        if(player.jump<=0){
 
-    if(
-        player.y<=0
-    ){
+            player.jump=0;
 
-        player.y=0;
+            player.jumpVelocity=0;
 
-        player.velocityY=0;
-
-        player.grounded=
-            true;
+            player.grounded=true;
+        }
     }
 }
 
 
-/* =========================================================
-   ЗАПУСК
-========================================================= */
+function render(){
 
-setTimeout(
-    ()=>{
-        document
-        .getElementById(
-            "loading"
-        )
-        .style.display=
-            "none";
-    },
-    700
-);
+    drawSky();
+
+    drawWalls();
+
+    drawRoadDetails();
+
+    drawWindows();
+
+    drawTrees();
+
+    drawCars();
+
+    drawPlayer();
+
+    drawCrosshair();
+}
 
 
 function loop(){
@@ -2131,7 +1640,6 @@ function loop(){
         loop
     );
 }
-
 
 loop();
 
