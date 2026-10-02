@@ -958,179 +958,276 @@ for(
 
 
 /* =====================================================
-   REALISTIC TREES
+   REALISTIC CITY TREES
 ===================================================== */
 
-/*
-   4 разных типа деревьев:
+function createRealisticTree(x, z, scale = 1){
 
-   1 — дуб
-   2 — клён
-   3 — берёза
-   4 — высокая сосна
+    const tree = new THREE.Group();
 
-   Все модели лёгкие и подходят для WebGL.
-*/
+    tree.position.set(x, 0, z);
+    tree.rotation.y = Math.random() * Math.PI * 2;
+    tree.scale.setScalar(scale);
 
-const treeLoader = new GLTFLoader();
+    /* =========================
+       СТВОЛ
+    ========================= */
 
-const treeModels = {
-    oak: null,
-    maple: null,
-    birch: null,
-    pine: null
-};
+    const trunkMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x4b3020,
+            roughness: 0.92
+        });
+
+    const trunk =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                0.42,
+                0.68,
+                7.5,
+                12
+            ),
+            trunkMaterial
+        );
+
+    trunk.position.y = 3.75;
+    trunk.castShadow = true;
+    trunk.receiveShadow = true;
+
+    tree.add(trunk);
 
 
-/* -----------------------------------------------------
-   ЗАГРУЗКА ДЕРЕВЬЕВ
------------------------------------------------------ */
+    /* =========================
+       ВЕТВИ
+    ========================= */
 
-function loadTree(
-    name,
-    url
-){
+    function branch(
+        length,
+        radius,
+        y,
+        angle,
+        tilt
+    ){
 
-    treeLoader.load(
-
-        url,
-
-        function(gltf){
-
-            const model =
-                gltf.scene;
-
-            model.traverse(
-                function(object){
-
-                    if(object.isMesh){
-
-                        object.castShadow = true;
-                        object.receiveShadow = true;
-
-                        if(object.material){
-
-                            object.material.needsUpdate = true;
-                        }
-                    }
-                }
+        const geometry =
+            new THREE.CylinderGeometry(
+                radius * .65,
+                radius,
+                length,
+                8
             );
 
-            treeModels[name] =
-                model;
-
-            console.log(
-                "ДЕРЕВО ЗАГРУЖЕНО:",
-                name
+        const mesh =
+            new THREE.Mesh(
+                geometry,
+                trunkMaterial
             );
-        },
 
-        undefined,
+        mesh.position.y = y;
 
-        function(error){
+        mesh.rotation.z = tilt;
+        mesh.rotation.y = angle;
 
-            console.error(
-                "ОШИБКА ЗАГРУЗКИ ДЕРЕВА:",
-                name,
-                error
-            );
-        }
-    );
-}
+        mesh.castShadow = true;
+
+        tree.add(mesh);
+
+        return mesh;
+    }
 
 
-/* дуб */
-
-loadTree(
-    "oak",
-    "https://polyfork.dev/cdn/broadleaf-oak-997c22.glb"
-);
-
-
-/* клён */
-
-loadTree(
-    "maple",
-    "https://polyfork.dev/cdn/maple-tree-65fa12.glb"
-);
-
-
-/* берёза */
-
-loadTree(
-    "birch",
-    "https://cdn.3dassets.dev/assets/27426/v1/model.glb"
-);
-
-
-/* высокая сосна */
-
-loadTree(
-    "pine",
-    "https://polyfork.dev/cdn/tall-pine-tree-ab4108.glb"
-);
-
-
-/* -----------------------------------------------------
-   СОЗДАНИЕ ДЕРЕВА
------------------------------------------------------ */
-
-function createRealTree(
-    x,
-    z,
-    type,
-    scale
-){
-
-    const source =
-        treeModels[type];
-
-    /*
-       Если модель ещё загружается —
-       дерево просто пропускаем.
-    */
-
-    if(!source)
-        return;
-
-
-    const tree =
-        source.clone(true);
-
-
-    tree.position.set(
-        x,
+    branch(
+        4.8,
+        .27,
+        5.5,
         0,
-        z
+        -0.65
+    );
+
+    branch(
+        4.5,
+        .25,
+        6.0,
+        Math.PI / 2,
+        0.62
+    );
+
+    branch(
+        4.2,
+        .22,
+        6.6,
+        Math.PI,
+        -0.55
+    );
+
+    branch(
+        3.8,
+        .20,
+        7.0,
+        Math.PI * 1.5,
+        0.58
     );
 
 
-    tree.scale.setScalar(
-        scale
-    );
+    /* =========================
+       ЛИСТВА
+    ========================= */
+
+    const leafMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x2f6b38,
+            roughness: 0.88
+        });
+
+
+    function foliage(
+        x,
+        y,
+        z,
+        size
+    ){
+
+        const crown =
+            new THREE.Mesh(
+                new THREE.SphereGeometry(
+                    size,
+                    14,
+                    10
+                ),
+                leafMaterial
+            );
+
+        crown.position.set(
+            x,
+            y,
+            z
+        );
+
+        crown.scale.y = .82;
+
+        crown.castShadow = true;
+        crown.receiveShadow = true;
+
+        tree.add(crown);
+    }
 
 
     /*
-       Случайный поворот.
-       Благодаря этому одинаковые модели
-       не выглядят одинаково.
+       Несколько отдельных масс листвы.
+       Благодаря этому крона не выглядит
+       одним шаром.
     */
 
-    tree.rotation.y =
-        Math.random() *
-        Math.PI *
-        2;
+    foliage(
+        -2.3,
+        7.4,
+        0,
+        2.3
+    );
+
+    foliage(
+        2.2,
+        7.7,
+        0,
+        2.4
+    );
+
+    foliage(
+        0,
+        9.0,
+        -1.4,
+        2.6
+    );
+
+    foliage(
+        0,
+        9.3,
+        1.5,
+        2.5
+    );
+
+    foliage(
+        -1.2,
+        10.4,
+        0,
+        2.2
+    );
+
+    foliage(
+        1.5,
+        10.5,
+        0,
+        2.1
+    );
 
 
-    tree.traverse(
-        function(object){
+    /* =========================
+       ВТОРОЙ СЛОЙ ЛИСТЬЕВ
+    ========================= */
 
-            if(object.isMesh){
+    const lightLeafMaterial =
+        new THREE.MeshStandardMaterial({
+            color: 0x3f7d43,
+            roughness: .9
+        });
 
-                object.castShadow = true;
-                object.receiveShadow = true;
-            }
-        }
+
+    function smallLeaf(
+        x,
+        y,
+        z,
+        size
+    ){
+
+        const mesh =
+            new THREE.Mesh(
+                new THREE.IcosahedronGeometry(
+                    size,
+                    2
+                ),
+                lightLeafMaterial
+            );
+
+        mesh.position.set(
+            x,
+            y,
+            z
+        );
+
+        mesh.scale.y = .75;
+
+        mesh.castShadow = true;
+
+        tree.add(mesh);
+    }
+
+
+    smallLeaf(
+        -3.0,
+        8.7,
+        .5,
+        1.45
+    );
+
+    smallLeaf(
+        3.0,
+        8.8,
+        -.3,
+        1.5
+    );
+
+    smallLeaf(
+        -.8,
+        11.2,
+        1.0,
+        1.5
+    );
+
+    smallLeaf(
+        1.0,
+        11.0,
+        -1.0,
+        1.4
     );
 
 
@@ -1138,168 +1235,45 @@ function createRealTree(
 }
 
 
-/* -----------------------------------------------------
-   РАЗМЕЩЕНИЕ
------------------------------------------------------ */
+/* =====================================================
+   10 КАЧЕСТВЕННЫХ ДЕРЕВЬЕВ
+===================================================== */
 
-function spawnTrees(){
+const treePositions = [
 
-    /*
-       Очищаем старые процедурные деревья.
-       Новые появятся только после загрузки моделей.
-    */
+    [-75,  -75, 1.15],
+    [ 75,  -75, 1.25],
 
-    const types = [
-        "oak",
-        "maple",
-        "birch",
-        "pine"
-    ];
+    [-95,  85,  1.05],
+    [ 95,   85, 1.20],
 
+    [-140, -110, 1.15],
+    [ 145, -120, 1.10],
 
-    for(
-        let i=0;
-        i<150;
-        i++
-    ){
+    [-155,  145, 1.30],
+    [ 155,  145, 1.15],
 
-        const x =
-            (Math.random()-.5)*1100;
+    [-260,   60, 1.20],
+    [ 260,  -60, 1.30]
 
-        const z =
-            (Math.random()-.5)*1100;
+];
 
 
-        /*
-           Не ставим деревья прямо
-           на центральные дороги.
-        */
+for(
+    let i = 0;
+    i < treePositions.length;
+    i++
+){
 
-        if(
-            Math.abs(x)<65 ||
-            Math.abs(z)<65
-        )
-            continue;
+    const data =
+        treePositions[i];
 
-
-        /*
-           Не ставим слишком близко
-           к перекрёсткам.
-        */
-
-        if(
-            Math.abs(x)<55 &&
-            Math.abs(z)<250
-        )
-            continue;
-
-        if(
-            Math.abs(z)<55 &&
-            Math.abs(x)<250
-        )
-            continue;
-
-
-        /*
-           Выбираем случайный тип.
-        */
-
-        const type =
-            types[
-                Math.floor(
-                    Math.random() *
-                    types.length
-                )
-            ];
-
-
-        /*
-           Разный размер.
-        */
-
-        let scale =
-            .8 +
-            Math.random()*.55;
-
-
-        /*
-           Берёзы немного выше.
-        */
-
-        if(type==="birch")
-            scale *= 1.08;
-
-
-        /*
-           Сосны немного выше.
-        */
-
-        if(type==="pine")
-            scale *= 1.12;
-
-
-        createRealTree(
-            x,
-            z,
-            type,
-            scale
-        );
-    }
-}
-
-
-/*
-   Ждём пока модели загрузятся.
-*/
-
-const treeSpawnTimer =
-    setInterval(
-        function(){
-
-            if(
-                treeModels.oak &&
-                treeModels.maple &&
-                treeModels.birch &&
-                treeModels.pine
-            ){
-
-                clearInterval(
-                    treeSpawnTimer
-                );
-
-                spawnTrees();
-
-                console.log(
-                    "ВСЕ ДЕРЕВЬЯ ГОТОВЫ"
-                );
-            }
-
-        },
-        200
-    );
-
-    const x =
-        (Math.random()-.5)*1100;
-
-    const z =
-        (Math.random()-.5)*1100;
-
-
-    if(
-        Math.abs(x)<55 &&
-        Math.abs(z)<55
-    )
-        continue;
-
-
-    createTree(
-        x,
-        z,
-        .8+
-        Math.random()*.5
+    createRealisticTree(
+        data[0],
+        data[1],
+        data[2]
     );
 }
-
 
 /* =====================================================
    ФОНАРИ
