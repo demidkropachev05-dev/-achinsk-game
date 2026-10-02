@@ -1619,6 +1619,9 @@ const clock =
 
 let walkTime=0;
 
+/* =====================================================
+   ОБНОВЛЕНИЕ ИГРЫ
+===================================================== */
 
 function update(){
 
@@ -1628,16 +1631,13 @@ function update(){
             .05
         );
 
-
     let forward =
-        (controls.forward?1:0) -
-        (controls.back?1:0);
-
+        (controls.forward ? 1 : 0) -
+        (controls.back ? 1 : 0);
 
     let side =
-        (controls.left?1:0) -
-        (controls.right?1:0);
-
+        (controls.left ? 1 : 0) -
+        (controls.right ? 1 : 0);
 
     const length =
         Math.hypot(
@@ -1645,16 +1645,16 @@ function update(){
             side
         );
 
+    const moving =
+        length > 0;
 
-    if(length>0){
+    if(moving){
 
-        forward/=length;
-        side/=length;
-
+        forward /= length;
+        side /= length;
 
         const speed =
-            22*delta;
-
+            22 * delta;
 
         const sin =
             Math.sin(yaw);
@@ -1662,23 +1662,19 @@ function update(){
         const cos =
             Math.cos(yaw);
 
-
         const moveX =
-            sin*forward +
-            cos*side;
-
+            sin * forward +
+            cos * side;
 
         const moveZ =
-            cos*forward -
-            sin*side;
-
+            cos * forward -
+            sin * side;
 
         player.position.x +=
-            moveX*speed;
+            moveX * speed;
 
         player.position.z +=
-            moveZ*speed;
-
+            moveZ * speed;
 
         player.rotation.y =
             Math.atan2(
@@ -1686,39 +1682,30 @@ function update(){
                 moveZ
             );
 
-
         walkTime +=
-            delta*10;
+            delta * 10;
+    }
 
-
-        /* ходьба */
-
-updateCharacterAnimation(
-    delta,
-    true,
-    false
-);
-        
-    }else{
+    /* персонаж */
 
     updateCharacterAnimation(
-    delta,
-    false,
-    false
-);
+        delta,
+        moving,
+        false
+    );
 
 
-    /* камера */
+    /* =================================================
+       КАМЕРА
+    ================================================= */
 
     const horizontal =
-        Math.cos(pitch)*
+        Math.cos(pitch) *
         distance;
-
 
     const vertical =
-        Math.sin(pitch)*
+        Math.sin(pitch) *
         distance;
-
 
     const target =
         new THREE.Vector3(
@@ -1727,28 +1714,25 @@ updateCharacterAnimation(
             player.position.z
         );
 
-
     const wanted =
         new THREE.Vector3(
 
             player.position.x -
-            Math.sin(yaw)*
+            Math.sin(yaw) *
             horizontal,
 
-            player.position.y+
+            player.position.y +
             vertical,
 
             player.position.z -
-            Math.cos(yaw)*
+            Math.cos(yaw) *
             horizontal
         );
-
 
     camera.position.lerp(
         wanted,
         .12
     );
-
 
     camera.lookAt(
         target
