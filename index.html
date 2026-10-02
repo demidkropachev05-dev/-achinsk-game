@@ -2,14 +2,16 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+
 <title>Ачинск 3D</title>
 
 <style>
 *{
     box-sizing:border-box;
     -webkit-tap-highlight-color:transparent;
-    touch-action:none;
+    user-select:none;
 }
 
 html,body{
@@ -17,1631 +19,2387 @@ html,body{
     width:100%;
     height:100%;
     overflow:hidden;
-    background:#202b32;
+    background:#080b10;
     font-family:Arial,sans-serif;
+    touch-action:none;
 }
 
-canvas{
+#game{
     position:fixed;
     inset:0;
     width:100%;
     height:100%;
-    display:block;
+    overflow:hidden;
 }
 
-#rotate{
-    display:none;
-    position:fixed;
+canvas{
+    display:block;
+    width:100%;
+    height:100%;
+}
+
+#loading{
+    position:absolute;
     inset:0;
-    z-index:100;
-    background:#182127;
-    color:white;
+    display:flex;
     align-items:center;
     justify-content:center;
     flex-direction:column;
-    text-align:center;
-    font-size:21px;
+    background:#080b10;
+    color:white;
+    z-index:100;
+    font-size:18px;
 }
 
-@media(orientation:portrait){
-    #rotate{
-        display:flex;
-    }
-    #gameUI{
-        display:none;
-    }
+#loadingBar{
+    width:220px;
+    height:5px;
+    margin-top:14px;
+    background:#202630;
+    border-radius:10px;
+    overflow:hidden;
 }
 
-#gameUI{
-    position:fixed;
+#loadingProgress{
+    width:0%;
+    height:100%;
+    background:#fff;
+    transition:width .2s;
+}
+
+#hint{
+    position:absolute;
+    top:14px;
+    left:50%;
+    transform:translateX(-50%);
+    color:rgba(255,255,255,.8);
+    font-size:12px;
+    background:rgba(0,0,0,.35);
+    padding:7px 12px;
+    border-radius:12px;
+    pointer-events:none;
+    z-index:10;
+}
+
+#controls{
+    position:absolute;
     inset:0;
     pointer-events:none;
-}
-
-#title{
-    position:absolute;
-    top:12px;
-    left:15px;
-    color:white;
-    font-size:13px;
-    font-weight:bold;
-    text-shadow:0 2px 5px #000;
+    z-index:20;
 }
 
 #joystick{
     position:absolute;
-    left:20px;
-    bottom:20px;
-    width:132px;
-    height:132px;
+    left:24px;
+    bottom:24px;
+    width:150px;
+    height:150px;
     border-radius:50%;
-    background:rgba(255,255,255,.08);
-    border:2px solid rgba(255,255,255,.28);
+    background:rgba(255,255,255,.10);
+    border:2px solid rgba(255,255,255,.22);
+    box-shadow:0 5px 25px rgba(0,0,0,.35);
     pointer-events:auto;
 }
 
-#stick{
+#joystickKnob{
     position:absolute;
-    width:58px;
-    height:58px;
-    left:35px;
-    top:35px;
+    width:62px;
+    height:62px;
+    left:44px;
+    top:44px;
     border-radius:50%;
-    background:rgba(255,255,255,.3);
-    border:2px solid rgba(255,255,255,.5);
-}
-
-.button{
-    position:absolute;
-    pointer-events:auto;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:white;
-    font-size:11px;
-    font-weight:bold;
-    background:rgba(15,20,24,.65);
-    border:1px solid rgba(255,255,255,.3);
+    background:rgba(255,255,255,.32);
+    border:2px solid rgba(255,255,255,.55);
+    box-shadow:0 4px 15px rgba(0,0,0,.35);
 }
 
 #jump{
-    width:72px;
-    height:72px;
-    right:22px;
-    bottom:22px;
+    position:absolute;
+    right:28px;
+    bottom:38px;
+    width:82px;
+    height:82px;
+    border-radius:50%;
+    border:2px solid rgba(255,255,255,.35);
+    background:rgba(255,255,255,.13);
+    color:white;
+    font-size:28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    pointer-events:auto;
+    box-shadow:0 5px 25px rgba(0,0,0,.35);
 }
 
-#run{
-    width:57px;
-    height:57px;
-    right:112px;
-    bottom:30px;
+#jump:active{
+    background:rgba(255,255,255,.3);
+    transform:scale(.94);
 }
 
-#run.active{
-    background:rgba(40,120,65,.8);
+@media (orientation:portrait){
+    #hint{
+        top:50%;
+        font-size:15px;
+        padding:12px 18px;
+    }
+
+    #hint::after{
+        content:"";
+    }
+}
+
+@media (max-width:700px){
+    #joystick{
+        left:18px;
+        bottom:18px;
+        width:135px;
+        height:135px;
+    }
+
+    #joystickKnob{
+        width:58px;
+        height:58px;
+        left:36.5px;
+        top:36.5px;
+    }
+
+    #jump{
+        right:20px;
+        bottom:25px;
+        width:72px;
+        height:72px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<canvas id="game"></canvas>
+<div id="game"></div>
 
-<div id="rotate">
-    <div style="font-size:45px">↻</div>
-    <div>Поверни телефон<br>горизонтально</div>
+<div id="loading">
+    <div>АЧИНСК 3D</div>
+    <div style="font-size:12px;opacity:.6;margin-top:5px">
+        загрузка города...
+    </div>
+    <div id="loadingBar">
+        <div id="loadingProgress"></div>
+    </div>
 </div>
 
-<div id="gameUI">
+<div id="hint">Свайп справа — камера</div>
 
-    <div id="title">
-        АЧИНСК 3D
-    </div>
+<div id="controls">
 
     <div id="joystick">
-        <div id="stick"></div>
+        <div id="joystickKnob"></div>
     </div>
 
-    <div id="run" class="button">
-        БЕГ
-    </div>
-
-    <div id="jump" class="button">
-        ПРЫЖОК
-    </div>
+    <div id="jump">↑</div>
 
 </div>
 
-<script>
-"use strict";
+<script type="module">
+
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+
+import {GLTFLoader} from
+"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js";
 
 /* =========================================================
-   CANVAS
+   ОСНОВНЫЕ НАСТРОЙКИ
 ========================================================= */
 
-const canvas =
-    document.getElementById("game");
+const CITY_SIZE = 1100;
 
-const ctx =
-    canvas.getContext("2d");
+const PLAYER_SPEED = 20;
 
-let W=innerWidth;
-let H=innerHeight;
-let DPR=Math.min(devicePixelRatio||1,2);
+const RUN_MULTIPLIER = 1.45;
 
-function resize(){
+const GRAVITY = -42;
 
-    W=innerWidth;
-    H=innerHeight;
+const JUMP_POWER = 15;
 
-    DPR=Math.min(
-        devicePixelRatio||1,
-        2
-    );
+const COLLISION_PADDING = 1.8;
 
-    canvas.width=
-        Math.floor(W*DPR);
+const ROAD_WIDTH = 26;
 
-    canvas.height=
-        Math.floor(H*DPR);
+const ROAD_GAP = 190;
 
-    canvas.style.width=W+"px";
-    canvas.style.height=H+"px";
+const WORLD_LIMIT = CITY_SIZE / 2 - 12;
 
-    ctx.setTransform(
-        DPR,0,0,DPR,0,0
-    );
-}
+/* =========================================================
+   СЦЕНА
+========================================================= */
 
-resize();
+const scene = new THREE.Scene();
 
-addEventListener(
-    "resize",
-    resize
+scene.background = new THREE.Color(0x91a5b7);
+
+scene.fog = new THREE.FogExp2(
+    0x8998a6,
+    0.00155
 );
-
-
-/* =========================================================
-   КАРТА ГОРОДА
-=========================================================
-
-   # = здание
-   . = дорога/земля
-   T = дерево
-*/
-
-const MAP=[
-"########################",
-"#......................#",
-"#..####.....####.......#",
-"#..#..#.....#..#...T...#",
-"#..#..#.....#..#.......#",
-"#..####.....####.......#",
-"#......................#",
-"#......####............#",
-"#......#..#............#",
-"#......#..#.....####...#",
-"#......####.....#..#...#",
-"#...............#..#...#",
-"#..T............####...#",
-"#......................#",
-"#....####..............#",
-"#....#..#..............#",
-"#....#..#........T.....#",
-"#....####..............#",
-"#......................#",
-"#......####.....####...#",
-"#......#..#.....#..#...#",
-"#......#..#.....#..#...#",
-"#......####.....####...#",
-"########################"
-];
-
-const MAP_W=24;
-const MAP_H=24;
-
-const CELL=10;
-
-
-/* =========================================================
-   ОБЪЕКТЫ
-========================================================= */
-
-const objects=[];
-
-for(let y=0;y<MAP_H;y++){
-
-    for(let x=0;x<MAP_W;x++){
-
-        const c=MAP[y][x];
-
-        if(c==="#"){
-
-            objects.push({
-                x:x,
-                y:y,
-                type:"building",
-                color:
-                    ((x+y)%3===0)
-                    ? "#77746e"
-                    : ((x+y)%3===1)
-                    ? "#8d877f"
-                    : "#696d70"
-            });
-        }
-
-        if(c==="T"){
-
-            objects.push({
-                x:x,
-                y:y,
-                type:"tree"
-            });
-        }
-    }
-}
-
-
-/* =========================================================
-   ИГРОК
-========================================================= */
-
-const player={
-
-    x:3.5,
-    y:12,
-
-    angle:0,
-
-    height:1.7,
-
-    jump:0,
-    jumpVelocity:0,
-
-    grounded:true
-};
-
 
 /* =========================================================
    КАМЕРА
 ========================================================= */
 
-const FOV=
-    Math.PI/3;
+const camera = new THREE.PerspectiveCamera(
+    62,
+    innerWidth / innerHeight,
+    0.1,
+    1500
+);
 
-const NUM_RAYS=420;
-
-const MAX_DISTANCE=80;
-
-const projectionScale=
-    1/Math.tan(FOV/2);
-
+camera.position.set(
+    0,
+    5,
+    8
+);
 
 /* =========================================================
-   УПРАВЛЕНИЕ
+   RENDERER
 ========================================================= */
 
-let joyX=0;
-let joyY=0;
+const renderer = new THREE.WebGLRenderer({
 
-let running=false;
+    antialias:true,
 
-const joystick=
-    document.getElementById(
-        "joystick"
-    );
+    powerPreference:"high-performance",
 
-const stick=
-    document.getElementById(
-        "stick"
-    );
+    logarithmicDepthBuffer:false
 
+});
 
-function joystickMove(
-    px,
-    py
-){
-
-    const r=
-        joystick.getBoundingClientRect();
-
-    const cx=
-        r.left+r.width/2;
-
-    const cy=
-        r.top+r.height/2;
-
-    let dx=
-        px-cx;
-
-    let dy=
-        py-cy;
-
-    const max=
-        r.width*.33;
-
-    const len=
-        Math.hypot(dx,dy);
-
-    if(len>max){
-
-        dx=
-            dx/len*max;
-
-        dy=
-            dy/len*max;
-    }
-
-    joyX=dx/max;
-    joyY=dy/max;
-
-    stick.style.transform=
-        `translate(${dx}px,${dy}px)`;
-}
-
-
-function joystickReset(){
-
-    joyX=0;
-    joyY=0;
-
-    stick.style.transform=
-        "translate(0,0)";
-}
-
-
-joystick.addEventListener(
-    "pointerdown",
-    e=>{
-
-        joystick.setPointerCapture(
-            e.pointerId
-        );
-
-        joystickMove(
-            e.clientX,
-            e.clientY
-        );
-    }
+renderer.setPixelRatio(
+    Math.min(
+        window.devicePixelRatio || 1,
+        1.5
+    )
 );
 
-joystick.addEventListener(
-    "pointermove",
-    e=>{
-
-        if(e.buttons)
-            joystickMove(
-                e.clientX,
-                e.clientY
-            );
-    }
+renderer.setSize(
+    innerWidth,
+    innerHeight,
+    false
 );
 
-joystick.addEventListener(
-    "pointerup",
-    joystickReset
-);
+renderer.shadowMap.enabled = true;
 
-joystick.addEventListener(
-    "pointercancel",
-    joystickReset
-);
+renderer.shadowMap.type =
+    THREE.PCFSoftShadowMap;
 
+renderer.outputColorSpace =
+    THREE.SRGBColorSpace;
 
-/* =========================================================
-   БЕГ
-========================================================= */
+renderer.toneMapping =
+    THREE.ACESFilmicToneMapping;
 
-const runButton=
-    document.getElementById(
-        "run"
-    );
-
-runButton.addEventListener(
-    "pointerdown",
-    ()=>{
-        running=true;
-        runButton.classList.add(
-            "active"
-        );
-    }
-);
-
-function stopRunning(){
-
-    running=false;
-
-    runButton.classList.remove(
-        "active"
-    );
-}
-
-runButton.addEventListener(
-    "pointerup",
-    stopRunning
-);
-
-runButton.addEventListener(
-    "pointercancel",
-    stopRunning
-);
-
-
-/* =========================================================
-   ПРЫЖОК
-========================================================= */
+renderer.toneMappingExposure = 1.05;
 
 document
-.getElementById("jump")
-.addEventListener(
-    "pointerdown",
-    ()=>{
-
-        if(player.grounded){
-
-            player.jumpVelocity=
-                5.8;
-
-            player.grounded=false;
-        }
-    }
-);
-
+    .getElementById("game")
+    .appendChild(renderer.domElement);
 
 /* =========================================================
-   ПОВОРОТ КАМЕРЫ
+   LIGHTING
 ========================================================= */
 
-let looking=false;
-let lastLookX=0;
+const hemi = new THREE.HemisphereLight(
+    0xb8c9d8,
+    0x283029,
+    1.55
+);
 
-canvas.addEventListener(
-    "pointerdown",
-    e=>{
+scene.add(hemi);
 
-        looking=true;
+const sun = new THREE.DirectionalLight(
+    0xffd4a3,
+    2.5
+);
 
-        lastLookX=
-            e.clientX;
+sun.position.set(
+    -280,
+    380,
+    220
+);
 
-        canvas.setPointerCapture(
-            e.pointerId
+sun.castShadow = true;
+
+sun.shadow.mapSize.set(
+    1024,
+    1024
+);
+
+sun.shadow.camera.left = -300;
+sun.shadow.camera.right = 300;
+sun.shadow.camera.top = 300;
+sun.shadow.camera.bottom = -300;
+
+sun.shadow.camera.near = 20;
+sun.shadow.camera.far = 850;
+
+sun.shadow.bias = -0.0003;
+
+scene.add(sun);
+
+/* =========================================================
+   МАТЕРИАЛЫ
+========================================================= */
+
+function mat(
+    color,
+    roughness=.8,
+    metalness=.02
+){
+
+    return new THREE.MeshStandardMaterial({
+
+        color,
+
+        roughness,
+
+        metalness
+
+    });
+
+}
+
+const groundMat =
+    mat(0x303633,.98);
+
+const asphaltMat =
+    mat(0x1d2021,.92);
+
+const sidewalkMat =
+    mat(0x777876,.9);
+
+const curbMat =
+    mat(0x969795,.85);
+
+const whiteMat =
+    mat(0xdadbd6,.7);
+
+const yellowMat =
+    mat(0xd6b84e,.65);
+
+const glassMat =
+    new THREE.MeshStandardMaterial({
+
+        color:0x203344,
+
+        roughness:.24,
+
+        metalness:.15,
+
+        transparent:true,
+
+        opacity:.78
+
+    });
+
+const darkGlassMat =
+    new THREE.MeshStandardMaterial({
+
+        color:0x101820,
+
+        roughness:.2,
+
+        metalness:.25
+
+    });
+
+const treeTrunkMat =
+    mat(0x3b2920,.95);
+
+const leafMat =
+    new THREE.MeshStandardMaterial({
+
+        color:0x263b29,
+
+        roughness:1
+
+    });
+
+/* =========================================================
+   ПОМОЩНИКИ
+========================================================= */
+
+function box(
+    w,
+    h,
+    d,
+    material,
+    x=0,
+    y=0,
+    z=0
+){
+
+    const mesh =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(w,h,d),
+            material
         );
-    }
-);
 
-canvas.addEventListener(
-    "pointermove",
-    e=>{
-
-        if(!looking)
-            return;
-
-        const dx=
-            e.clientX-lastLookX;
-
-        lastLookX=
-            e.clientX;
-
-        player.angle+=
-            dx*.004;
-    }
-);
-
-canvas.addEventListener(
-    "pointerup",
-    ()=>{
-        looking=false;
-    }
-);
-
-canvas.addEventListener(
-    "pointercancel",
-    ()=>{
-        looking=false;
-    }
-);
-
-
-/* =========================================================
-   КОЛЛИЗИЯ
-========================================================= */
-
-function solid(
-    x,
-    y
-){
-
-    if(
-        x<0 ||
-        y<0 ||
-        x>=MAP_W ||
-        y>=MAP_H
-    )
-        return true;
-
-    return MAP[
-        Math.floor(y)
-    ][
-        Math.floor(x)
-    ]==="#";
-}
-
-
-function canMove(
-    x,
-    y
-){
-
-    const r=.22;
-
-    return !(
-        solid(x-r,y-r) ||
-        solid(x+r,y-r) ||
-        solid(x-r,y+r) ||
-        solid(x+r,y+r)
-    );
-}
-
-
-/* =========================================================
-   RAYCAST
-========================================================= */
-
-function castRay(angle){
-
-    const sin=
-        Math.sin(angle);
-
-    const cos=
-        Math.cos(angle);
-
-    let x=
-        player.x;
-
-    let y=
-        player.y;
-
-    let distance=0;
-
-    const step=.055;
-
-    while(
-        distance<
-        MAX_DISTANCE
-    ){
-
-        x+=cos*step;
-        y+=sin*step;
-
-        distance+=step;
-
-        if(solid(x,y)){
-
-            return {
-                distance,
-                x,
-                y
-            };
-        }
-    }
-
-    return {
-        distance:MAX_DISTANCE,
+    mesh.position.set(
         x,
-        y
-    };
+        y,
+        z
+    );
+
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+
+    return mesh;
+
 }
 
-
-/* =========================================================
-   НЕБО И ЗЕМЛЯ
-========================================================= */
-
-function drawSky(){
-
-    const sky=
-        ctx.createLinearGradient(
-            0,0,
-            0,H*.58
-        );
-
-    sky.addColorStop(
-        0,
-        "#4f6878"
-    );
-
-    sky.addColorStop(
-        .55,
-        "#91a2aa"
-    );
-
-    sky.addColorStop(
-        1,
-        "#c2c0b3"
-    );
-
-    ctx.fillStyle=sky;
-
-    ctx.fillRect(
-        0,
-        0,
-        W,
-        H*.58
-    );
-
-
-    const ground=
-        ctx.createLinearGradient(
-            0,H*.48,
-            0,H
-        );
-
-    ground.addColorStop(
-        0,
-        "#59615b"
-    );
-
-    ground.addColorStop(
-        1,
-        "#272b29"
-    );
-
-    ctx.fillStyle=ground;
-
-    ctx.fillRect(
-        0,
-        H*.48,
-        W,
-        H*.52
-    );
-}
-
-
-/* =========================================================
-   РИСОВАНИЕ СТЕН
-========================================================= */
-
-function drawWalls(){
-
-    const step=
-        W/NUM_RAYS;
-
-    const wallDepth=[];
-
-    for(
-        let ray=0;
-        ray<NUM_RAYS;
-        ray++
-    ){
-
-        const cameraX=
-            ray/NUM_RAYS-.5;
-
-        const rayAngle=
-            player.angle+
-            cameraX*FOV;
-
-        const hit=
-            castRay(rayAngle);
-
-        let dist=
-            hit.distance;
-
-        /* устраняем fish-eye */
-
-        dist*=
-            Math.cos(
-                rayAngle-player.angle
-            );
-
-        wallDepth[ray]=dist;
-
-        const wallHeight=
-            H/
-            Math.max(
-                .01,
-                dist
-            )*
-            .92;
-
-
-        const top=
-            H*.5-
-            wallHeight*
-            (
-                .48+
-                player.jump*.08
-            );
-
-
-        const bottom=
-            H*.5+
-            wallHeight*
-            (
-                .52+
-                player.jump*.08
-            );
-
-
-        let shade=
-            1-
-            dist/70;
-
-
-        shade=
-            Math.max(
-                .25,
-                Math.min(
-                    1,
-                    shade
-                )
-            );
-
-
-        const mapX=
-            Math.floor(hit.x);
-
-        const mapY=
-            Math.floor(hit.y);
-
-
-        const obj=
-            objects.find(
-                o=>
-                    o.x===mapX &&
-                    o.y===mapY
-            );
-
-
-        let base=
-            obj
-            ? obj.color
-            : "#777";
-
-
-        if(
-            hit.x-
-            Math.floor(hit.x)
-            <.04 ||
-            hit.y-
-            Math.floor(hit.y)
-            <.04
-        ){
-
-            shade*=.82;
-        }
-
-
-        ctx.fillStyle=
-            darken(
-                base,
-                shade
-            );
-
-
-        ctx.fillRect(
-            ray*step,
-            top,
-            step+1,
-            bottom-top
-        );
-
-
-        /* этажные линии */
-
-        if(
-            obj &&
-            obj.type==="building"
-        ){
-
-            const floors=
-                Math.max(
-                    2,
-                    Math.min(
-                        6,
-                        2+
-                        ((mapX*7+
-                          mapY*3)%5)
-                    )
-                );
-
-
-            for(
-                let f=1;
-                f<floors;
-                f++
-            ){
-
-                const yy=
-                    top+
-                    (bottom-top)*
-                    f/floors;
-
-
-                ctx.fillStyle=
-                    "rgba(35,38,38,.2)";
-
-                ctx.fillRect(
-                    ray*step,
-                    yy,
-                    step+1,
-                    1
-                );
-            }
-        }
-    }
-
-    return wallDepth;
-}
-
-
-/* =========================================================
-   ЦВЕТ
-========================================================= */
-
-function darken(
-    hex,
-    amount
+function cyl(
+    r,
+    h,
+    material,
+    x=0,
+    y=0,
+    z=0
 ){
 
-    let c=
-        hex.replace("#","");
-
-    let r=
-        parseInt(
-            c.substring(0,2),
-            16
+    const mesh =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                r,
+                r,
+                h,
+                10
+            ),
+            material
         );
 
-    let g=
-        parseInt(
-            c.substring(2,4),
-            16
-        );
+    mesh.position.set(
+        x,
+        y,
+        z
+    );
 
-    let b=
-        parseInt(
-            c.substring(4,6),
-            16
-        );
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
 
-    r=Math.floor(r*amount);
-    g=Math.floor(g*amount);
-    b=Math.floor(b*amount);
+    return mesh;
 
-    return `rgb(${r},${g},${b})`;
 }
 
+/* =========================================================
+   ЗЕМЛЯ
+========================================================= */
+
+const ground =
+    new THREE.Mesh(
+        new THREE.PlaneGeometry(
+            CITY_SIZE,
+            CITY_SIZE
+        ),
+        groundMat
+    );
+
+ground.rotation.x = -Math.PI/2;
+
+ground.receiveShadow = true;
+
+scene.add(ground);
+
+/* =========================================================
+   ДОРОГИ
+========================================================= */
+
+function createRoad(
+    x,
+    z,
+    width,
+    length,
+    rotation=0
+){
+
+    const road =
+        box(
+            width,
+            .08,
+            length,
+            asphaltMat,
+            x,
+            .04,
+            z
+        );
+
+    road.rotation.y =
+        rotation;
+
+    scene.add(road);
+
+    /* бордюры */
+
+    const curb1 =
+        box(
+            .7,
+            .25,
+            length,
+            curbMat,
+            x-width/2-.35,
+            .14,
+            z
+        );
+
+    const curb2 =
+        box(
+            .7,
+            .25,
+            length,
+            curbMat,
+            x+width/2+.35,
+            .14,
+            z
+        );
+
+    curb1.rotation.y = rotation;
+    curb2.rotation.y = rotation;
+
+    scene.add(curb1,curr=curb2);
+
+}
+
+/* исправление ссылки */
+
+function road(
+    x,
+    z,
+    width,
+    length,
+    rotation=0
+){
+
+    const group =
+        new THREE.Group();
+
+    const r =
+        box(
+            width,
+            .08,
+            length,
+            asphaltMat
+        );
+
+    r.rotation.y = rotation;
+
+    group.add(r);
+
+    const c1 =
+        box(
+            .65,
+            .22,
+            length,
+            curbMat
+        );
+
+    c1.position.x =
+        -width/2-.35;
+
+    const c2 =
+        box(
+            .65,
+            .22,
+            length,
+            curbMat
+        );
+
+    c2.position.x =
+        width/2+.35;
+
+    c1.rotation.y = rotation;
+    c2.rotation.y = rotation;
+
+    group.add(c1,c2);
+
+    group.position.set(
+        x,
+        0,
+        z
+    );
+
+    scene.add(group);
+
+}
+
+/* главные дороги */
+
+road(
+    0,
+    0,
+    ROAD_WIDTH,
+    CITY_SIZE
+);
+
+road(
+    0,
+    0,
+    ROAD_WIDTH,
+    CITY_SIZE,
+    Math.PI/2
+);
+
+road(
+    ROAD_GAP,
+    0,
+    20,
+    CITY_SIZE
+);
+
+road(
+    -ROAD_GAP,
+    0,
+    20,
+    CITY_SIZE
+);
+
+road(
+    0,
+    ROAD_GAP,
+    20,
+    CITY_SIZE,
+    Math.PI/2
+);
+
+road(
+    0,
+    -ROAD_GAP,
+    20,
+    CITY_SIZE,
+    Math.PI/2
+);
+
+/* =========================================================
+   ДОРОЖНАЯ РАЗМЕТКА
+========================================================= */
+
+const lineGeo =
+    new THREE.BoxGeometry(
+        .22,
+        .025,
+        7
+    );
+
+const lineMat =
+    new THREE.MeshBasicMaterial({
+        color:0xe7e5d8
+    });
+
+const lines =
+    new THREE.InstancedMesh(
+        lineGeo,
+        lineMat,
+        400
+    );
+
+let lineIndex=0;
+
+for(
+    let x=-CITY_SIZE/2;
+    x<CITY_SIZE/2;
+    x+=14
+){
+
+    if(lineIndex>=400) break;
+
+    const m =
+        new THREE.Matrix4();
+
+    m.makeTranslation(
+        0,
+        .1,
+        x
+    );
+
+    lines.setMatrixAt(
+        lineIndex++,
+        m
+    );
+
+}
+
+lines.count=lineIndex;
+
+scene.add(lines);
+
+/* =========================================================
+   КОЛЛИЗИИ
+========================================================= */
+
+const buildingColliders=[];
+
+function addCollider(
+    x,
+    z,
+    w,
+    d
+){
+
+    buildingColliders.push({
+
+        minX:x-w/2,
+
+        maxX:x+w/2,
+
+        minZ:z-d/2,
+
+        maxZ:z+d/2
+
+    });
+
+}
 
 /* =========================================================
    ОКНА
 ========================================================= */
 
-function drawWindows(){
+const windowGeo =
+    new THREE.BoxGeometry(
+        1.7,
+        1.35,
+        .08
+    );
 
-    for(
-        const o of objects
-    ){
+const windowMat =
+    new THREE.MeshStandardMaterial({
 
-        if(
-            o.type!=="building"
+        color:0x344a5a,
+
+        roughness:.32,
+
+        metalness:.12
+
+    });
+
+const windows =
+    new THREE.InstancedMesh(
+        windowGeo,
+        windowMat,
+        2200
+    );
+
+let windowIndex=0;
+
+function addWindow(
+    x,
+    y,
+    z,
+    rotY=0
+){
+
+    if(windowIndex>=2200)
+        return;
+
+    const matrix =
+        new THREE.Matrix4();
+
+    const q =
+        new THREE.Quaternion();
+
+    q.setFromAxisAngle(
+        new THREE.Vector3(0,1,0),
+        rotY
+    );
+
+    matrix.compose(
+
+        new THREE.Vector3(
+            x,
+            y,
+            z
+        ),
+
+        q,
+
+        new THREE.Vector3(
+            1,
+            1,
+            1
         )
-            continue;
 
-        const dx=
-            o.x+.5-player.x;
+    );
 
-        const dy=
-            o.y+.5-player.y;
+    windows.setMatrixAt(
+        windowIndex++,
+        matrix
+    );
 
-        const dist=
-            Math.hypot(dx,dy);
-
-        if(dist>24)
-            continue;
-
-        let angle=
-            Math.atan2(
-                dy,
-                dx
-            )-
-            player.angle;
-
-        while(
-            angle<-Math.PI
-        )
-            angle+=Math.PI*2;
-
-        while(
-            angle>Math.PI
-        )
-            angle-=Math.PI*2;
-
-        if(
-            Math.abs(angle)>
-            FOV*.6
-        )
-            continue;
-
-        const screenX=
-            W/2+
-            angle/FOV*W;
-
-        const scale=
-            H/(dist*8);
-
-        const floors=
-            3+
-            ((o.x+
-              o.y)%3);
-
-        const cols=3;
-
-
-        for(
-            let f=0;
-            f<floors;
-            f++
-        ){
-
-            for(
-                let c=0;
-                c<cols;
-                c++
-            ){
-
-                const wx=
-                    screenX+
-                    (c-1)*
-                    scale*2.2;
-
-                const wy=
-                    H*.52-
-                    f*
-                    scale*2.7-
-                    scale*2;
-
-
-                const size=
-                    Math.max(
-                        2,
-                        scale*1.35
-                    );
-
-
-                ctx.fillStyle=
-                    (
-                        (f+c+
-                         Math.floor(o.x))
-                        %4===0
-                    )
-                    ? "#d6bd72"
-                    : "#405766";
-
-
-                ctx.fillRect(
-                    wx-size/2,
-                    wy-size/2,
-                    size,
-                    size*1.2
-                );
-            }
-        }
-    }
 }
 
+/* =========================================================
+   БАЛКОНЫ
+========================================================= */
+
+function addBalcony(
+    x,
+    y,
+    z,
+    rotY
+){
+
+    const b =
+        box(
+            3.2,
+            .16,
+            1.3,
+            curbMat
+        );
+
+    b.position.set(
+        x,
+        y,
+        z
+    );
+
+    b.rotation.y =
+        rotY;
+
+    scene.add(b);
+
+}
+
+/* =========================================================
+   ЗДАНИЯ
+========================================================= */
+
+const buildingColors=[
+    0x77766e,
+    0x8b8175,
+    0x6c7473,
+    0x8e8c84,
+    0x706b66,
+    0x9a9388,
+    0x686f72,
+    0x81786e
+];
+
+function createBuilding(
+    x,
+    z,
+    w,
+    d,
+    h,
+    color
+){
+
+    const group =
+        new THREE.Group();
+
+    const body =
+        box(
+            w,
+            h,
+            d,
+            mat(
+                color,
+                .9,
+                .02
+            )
+        );
+
+    body.position.y =
+        h/2;
+
+    group.add(body);
+
+    /* крыша */
+
+    const roof =
+        box(
+            w+.7,
+            .22,
+            d+.7,
+            mat(0x353636,.95)
+        );
+
+    roof.position.y =
+        h+.11;
+
+    group.add(roof);
+
+    /* вертикальные секции */
+
+    if(w>18){
+
+        for(
+            let sx=-w/2+4;
+            sx<w/2-2;
+            sx+=7
+        ){
+
+            const strip =
+                box(
+                    .16,
+                    h,
+                    .15,
+                    mat(0x5d5b57,.9)
+                );
+
+            strip.position.set(
+                sx,
+                h/2,
+                -d/2-.09
+            );
+
+            group.add(strip);
+
+        }
+
+    }
+
+    scene.add(group);
+
+    group.position.set(
+        x,
+        0,
+        z
+    );
+
+    addCollider(
+        x,
+        z,
+        w,
+        d
+    );
+
+    /* окна спереди */
+
+    const rows =
+        Math.max(
+            1,
+            Math.floor(h/3.2)
+        );
+
+    const cols =
+        Math.max(
+            1,
+            Math.floor(w/3.7)
+        );
+
+    for(
+        let row=0;
+        row<rows;
+        row++
+    ){
+
+        const yy =
+            2.1+
+            row*3.05;
+
+        for(
+            let col=0;
+            col<cols;
+            col++
+        ){
+
+            const xx =
+                x-w/2+
+                2.1+
+                col*3.7;
+
+            addWindow(
+                xx,
+                yy,
+                z-d/2-.08,
+                0
+            );
+
+            if(
+                (row+col)%5===0 &&
+                h>12
+            ){
+
+                addBalcony(
+                    xx,
+                    yy-.72,
+                    z-d/2-1.0,
+                    0
+                );
+
+            }
+
+        }
+
+    }
+
+    /* окна с боков */
+
+    for(
+        let row=0;
+        row<rows;
+        row++
+    ){
+
+        const yy =
+            2.1+
+            row*3.05;
+
+        for(
+            let col=0;
+            col<Math.floor(d/4);
+            col++
+        ){
+
+            const zz =
+                z-d/2+
+                2+
+                col*4;
+
+            addWindow(
+                x+w/2+.08,
+                yy,
+                zz,
+                Math.PI/2
+            );
+
+        }
+
+    }
+
+}
+
+/* =========================================================
+   РАЙОНЫ
+========================================================= */
+
+function isRoadPosition(
+    x,
+    z
+){
+
+    const roads=[
+        0,
+        ROAD_GAP,
+        -ROAD_GAP
+    ];
+
+    for(const r of roads){
+
+        if(
+            Math.abs(x-r)
+            <
+            ROAD_WIDTH/2+18
+        )
+            return true;
+
+        if(
+            Math.abs(z-r)
+            <
+            ROAD_WIDTH/2+18
+        )
+            return true;
+
+    }
+
+    return false;
+
+}
+
+let seed=42;
+
+function random(){
+
+    seed =
+        (seed*1664525+1013904223)
+        %4294967296;
+
+    return seed/4294967296;
+
+}
+
+for(
+    let i=0;
+    i<95;
+    i++
+){
+
+    const x =
+        -CITY_SIZE/2+
+        50+
+        random()*(CITY_SIZE-100);
+
+    const z =
+        -CITY_SIZE/2+
+        50+
+        random()*(CITY_SIZE-100);
+
+    if(isRoadPosition(x,z))
+        continue;
+
+    const w =
+        16+
+        random()*28;
+
+    const d =
+        15+
+        random()*28;
+
+    const h =
+        7+
+        random()*25;
+
+    const color =
+        buildingColors[
+            Math.floor(
+                random()*buildingColors.length
+            )
+        ];
+
+    createBuilding(
+        x,
+        z,
+        w,
+        d,
+        h,
+        color
+    );
+
+}
+
+windows.instanceMatrix.needsUpdate=true;
+
+scene.add(windows);
 
 /* =========================================================
    ДЕРЕВЬЯ
 ========================================================= */
 
-function drawTrees(){
+const treeGroup =
+    new THREE.Group();
 
-    for(
-        const o of objects
-    ){
+function createTree(
+    x,
+    z,
+    scale=1
+){
 
-        if(
-            o.type!=="tree"
-        )
-            continue;
+    const tree =
+        new THREE.Group();
 
-        const dx=
-            o.x+.5-player.x;
-
-        const dy=
-            o.y+.5-player.y;
-
-        const dist=
-            Math.hypot(dx,dy);
-
-        if(dist>35)
-            continue;
-
-        let angle=
-            Math.atan2(
-                dy,
-                dx
-            )-
-            player.angle;
-
-        while(
-            angle<-Math.PI
-        )
-            angle+=Math.PI*2;
-
-        while(
-            angle>Math.PI
-        )
-            angle-=Math.PI*2;
-
-        if(
-            Math.abs(angle)>
-            FOV*.65
-        )
-            continue;
-
-        const sx=
-            W/2+
-            angle/FOV*W;
-
-        const size=
-            H/(dist*1.8);
-
-
-        const ground=
-            H*.54+
-            player.jump*8;
-
-
-        /* ствол */
-
-        ctx.fillStyle=
-            "#4a3525";
-
-        ctx.fillRect(
-            sx-size*.09,
-            ground-size*.62,
-            size*.18,
-            size*.62
+    const trunk =
+        cyl(
+            .28*scale,
+            3.1*scale,
+            treeTrunkMat
         );
 
+    trunk.position.y =
+        1.55*scale;
 
-        /* крона */
+    tree.add(trunk);
 
-        ctx.fillStyle=
-            "#294e31";
-
-        ctx.beginPath();
-
-        ctx.arc(
-            sx,
-            ground-size*.7,
-            size*.35,
-            0,
-            Math.PI*2
+    const crown1 =
+        new THREE.Mesh(
+            new THREE.IcosahedronGeometry(
+                2.2*scale,
+                1
+            ),
+            leafMat
         );
 
-        ctx.fill();
+    crown1.position.y =
+        4.0*scale;
 
-        ctx.fillStyle=
-            "#37643b";
+    crown1.castShadow=true;
 
-        ctx.beginPath();
+    tree.add(crown1);
 
-        ctx.arc(
-            sx-size*.16,
-            ground-size*.82,
-            size*.23,
-            0,
-            Math.PI*2
+    const crown2 =
+        new THREE.Mesh(
+            new THREE.IcosahedronGeometry(
+                1.65*scale,
+                1
+            ),
+            leafMat
         );
 
-        ctx.fill();
-    }
+    crown2.position.set(
+        .3*scale,
+        5.1*scale,
+        .2*scale
+    );
+
+    crown2.castShadow=true;
+
+    tree.add(crown2);
+
+    tree.position.set(
+        x,
+        0,
+        z
+    );
+
+    treeGroup.add(tree);
+
 }
 
+for(
+    let i=0;
+    i<100;
+    i++
+){
+
+    const x =
+        -CITY_SIZE/2+
+        30+
+        random()*(CITY_SIZE-60);
+
+    const z =
+        -CITY_SIZE/2+
+        30+
+        random()*(CITY_SIZE-60);
+
+    if(isRoadPosition(x,z))
+        continue;
+
+    createTree(
+        x,
+        z,
+        .75+
+        random()*.55
+    );
+
+}
+
+scene.add(treeGroup);
 
 /* =========================================================
-   ДОРОГА
+   ФОНАРИ
 ========================================================= */
 
-function drawRoadDetails(){
+function createLamp(
+    x,
+    z,
+    rot=0
+){
 
-    const horizon=
-        H*.5;
+    const group =
+        new THREE.Group();
 
-    ctx.strokeStyle=
-        "rgba(225,220,195,.75)";
-
-    ctx.lineWidth=2;
-
-
-    for(
-        let i=-8;
-        i<=8;
-        i++
-    ){
-
-        const x=
-            W/2+
-            i*W/9;
-
-        ctx.beginPath();
-
-        ctx.moveTo(
-            W/2,
-            horizon
+    const pole =
+        cyl(
+            .11,
+            5.2,
+            mat(0x252729,.8)
         );
 
-        ctx.lineTo(
-            x,
-            H
+    pole.position.y=2.6;
+
+    group.add(pole);
+
+    const arm =
+        box(
+            1.25,
+            .1,
+            .1,
+            mat(0x252729,.8)
         );
 
-        ctx.stroke();
-    }
+    arm.position.set(
+        .55,
+        5.05,
+        0
+    );
+
+    group.add(arm);
+
+    const lamp =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                .18,
+                8,
+                8
+            ),
+            new THREE.MeshBasicMaterial({
+                color:0xffd98b
+            })
+        );
+
+    lamp.position.set(
+        1.12,
+        4.95,
+        0
+    );
+
+    group.add(lamp);
+
+    group.position.set(
+        x,
+        0,
+        z
+    );
+
+    group.rotation.y =
+        rot;
+
+    scene.add(group);
+
 }
 
+for(
+    let i=-500;
+    i<=500;
+    i+=45
+){
+
+    createLamp(
+        ROAD_WIDTH/2+4,
+        i,
+        0
+    );
+
+    createLamp(
+        -ROAD_WIDTH/2-4,
+        i,
+        Math.PI
+    );
+
+}
 
 /* =========================================================
    МАШИНЫ
 ========================================================= */
 
-function drawCars(){
+const carColors=[
+    0x30363a,
+    0x5b6064,
+    0x8a2f2b,
+    0x74726c,
+    0x1f2930,
+    0x9b9b91
+];
 
-    const cars=[
-        {
-            x:8.5,
-            y:12.4,
-            color:"#9b3936"
-        },
-        {
-            x:14.2,
-            y:12.7,
-            color:"#34516b"
-        }
-    ];
+function createCar(
+    x,
+    z,
+    rot,
+    color
+){
 
+    const car =
+        new THREE.Group();
+
+    const body =
+        box(
+            4.4,
+            1.05,
+            1.9,
+            mat(color,.65,.15)
+        );
+
+    body.position.y=.8;
+
+    car.add(body);
+
+    const cabin =
+        box(
+            2.4,
+            .85,
+            1.55,
+            darkGlassMat
+        );
+
+    cabin.position.set(
+        -.1,
+        1.65,
+        0
+    );
+
+    car.add(cabin);
+
+    const wheelMat =
+        mat(0x101112,.95);
+
+    const wheelGeo =
+        new THREE.CylinderGeometry(
+            .42,
+            .42,
+            .25,
+            12
+        );
 
     for(
-        const car of cars
+        const wx of [-1.45,1.45]
     ){
 
-        const dx=
-            car.x-player.x;
+        for(
+            const wz of [-1.0,1.0]
+        ){
 
-        const dy=
-            car.y-player.y;
+            const wheel =
+                new THREE.Mesh(
+                    wheelGeo,
+                    wheelMat
+                );
 
-        const dist=
-            Math.hypot(dx,dy);
+            wheel.rotation.z =
+                Math.PI/2;
 
-        if(dist>30)
-            continue;
+            wheel.position.set(
+                wx,
+                .48,
+                wz
+            );
 
-        let a=
-            Math.atan2(
-                dy,
-                dx
-            )-
-            player.angle;
+            car.add(wheel);
 
-        while(a<-Math.PI)
-            a+=Math.PI*2;
+        }
 
-        while(a>Math.PI)
-            a-=Math.PI*2;
-
-        if(
-            Math.abs(a)>
-            FOV*.55
-        )
-            continue;
-
-        const sx=
-            W/2+
-            a/FOV*W;
-
-        const size=
-            H/(dist*1.5);
-
-        const ground=
-            H*.57;
-
-
-        ctx.fillStyle=
-            car.color;
-
-        ctx.fillRect(
-            sx-size*.5,
-            ground-size*.32,
-            size,
-            size*.3
-        );
-
-        ctx.fillStyle=
-            "#202a2f";
-
-        ctx.fillRect(
-            sx-size*.32,
-            ground-size*.5,
-            size*.64,
-            size*.2
-        );
     }
+
+    car.position.set(
+        x,
+        0,
+        z
+    );
+
+    car.rotation.y =
+        rot;
+
+    car.traverse(
+        o=>{
+            if(o.isMesh){
+                o.castShadow=true;
+                o.receiveShadow=true;
+            }
+        }
+    );
+
+    scene.add(car);
+
 }
 
+for(
+    let i=0;
+    i<26;
+    i++
+){
+
+    const vertical =
+        random()>.5;
+
+    const lane =
+        vertical
+        ? ROAD_WIDTH/2-4
+        : ROAD_WIDTH/2-4;
+
+    const offset =
+        -500+
+        random()*1000;
+
+    const color =
+        carColors[
+            Math.floor(
+                random()*carColors.length
+            )
+        ];
+
+    if(vertical){
+
+        createCar(
+            lane,
+            offset,
+            Math.PI/2,
+            color
+        );
+
+    }else{
+
+        createCar(
+            offset,
+            lane,
+            0,
+            color
+        );
+
+    }
+
+}
 
 /* =========================================================
    ПЕРСОНАЖ
 ========================================================= */
 
-function drawPlayer(){
+let player =
+    new THREE.Group();
 
-    /*
-       Персонаж находится снизу экрана.
-       Это временная модель.
-       Дальше заменим её на полноценную
-       3D-модель человека.
-    */
+player.position.set(
+    0,
+    0,
+    40
+);
 
-    const bob=
-        Math.sin(
-            performance.now()/100
-        )*
-        (
-            Math.abs(joyX)+
-            Math.abs(joyY)
-        )*
-        2;
+scene.add(player);
 
+let character=null;
 
-    const cx=
-        W/2;
+let mixer=null;
 
-    const ground=
-        H*.94+
-        bob+
-        player.jump*18;
+let idleAction=null;
 
-    const s=
-        Math.min(
-            W,H
-        )/500;
+let walkAction=null;
 
+let runAction=null;
 
-    /* тень */
+let currentAction=null;
 
-    ctx.fillStyle=
-        "rgba(0,0,0,.4)";
+const loader =
+    new GLTFLoader();
 
-    ctx.beginPath();
+const characterURL =
+"https://raw.githubusercontent.com/MMWilliams/char-kit/master/characters/mh_3183.glb";
 
-    ctx.ellipse(
-        cx,
-        ground,
-        38*s,
-        10*s,
-        0,
-        0,
-        Math.PI*2
-    );
+function setAction(
+    action
+){
 
-    ctx.fill();
+    if(
+        !action ||
+        currentAction===action
+    )
+        return;
 
+    if(currentAction){
 
-    /* ноги */
+        currentAction
+            .fadeOut(.18);
 
-    ctx.fillStyle=
-        "#1d2329";
+    }
 
-    ctx.fillRect(
-        cx-19*s,
-        ground-75*s,
-        15*s,
-        72*s
-    );
+    action
+        .reset()
+        .fadeIn(.18)
+        .play();
 
-    ctx.fillRect(
-        cx+4*s,
-        ground-75*s,
-        15*s,
-        72*s
-    );
+    currentAction=action;
 
-
-    /* корпус */
-
-    ctx.fillStyle=
-        "#303942";
-
-    ctx.fillRect(
-        cx-30*s,
-        ground-155*s,
-        60*s,
-        83*s
-    );
-
-
-    /* руки */
-
-    ctx.fillStyle=
-        "#303942";
-
-    ctx.fillRect(
-        cx-43*s,
-        ground-148*s,
-        13*s,
-        67*s
-    );
-
-    ctx.fillRect(
-        cx+30*s,
-        ground-148*s,
-        13*s,
-        67*s
-    );
-
-
-    /* шея */
-
-    ctx.fillStyle=
-        "#bd8569";
-
-    ctx.fillRect(
-        cx-8*s,
-        ground-174*s,
-        16*s,
-        24*s
-    );
-
-
-    /* голова */
-
-    ctx.beginPath();
-
-    ctx.arc(
-        cx,
-        ground-198*s,
-        29*s,
-        0,
-        Math.PI*2
-    );
-
-    ctx.fillStyle=
-        "#c58b6e";
-
-    ctx.fill();
-
-
-    /* волосы */
-
-    ctx.beginPath();
-
-    ctx.arc(
-        cx,
-        ground-210*s,
-        29*s,
-        Math.PI,
-        Math.PI*2
-    );
-
-    ctx.fillStyle=
-        "#24201d";
-
-    ctx.fill();
-
-
-    /* шов куртки */
-
-    ctx.strokeStyle=
-        "rgba(255,255,255,.12)";
-
-    ctx.lineWidth=
-        2*s;
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        cx,
-        ground-153*s
-    );
-
-    ctx.lineTo(
-        cx,
-        ground-76*s
-    );
-
-    ctx.stroke();
 }
 
+loader.load(
 
-/* =========================================================
-   ПРИЦЕЛ / ЦЕНТР
-========================================================= */
+    characterURL,
 
-function drawCrosshair(){
+    gltf=>{
 
-    ctx.strokeStyle=
-        "rgba(255,255,255,.3)";
+        character =
+            gltf.scene;
 
-    ctx.lineWidth=1;
-
-    ctx.beginPath();
-
-    ctx.moveTo(
-        W/2-5,
-        H/2
-    );
-
-    ctx.lineTo(
-        W/2+5,
-        H/2
-    );
-
-    ctx.moveTo(
-        W/2,
-        H/2-5
-    );
-
-    ctx.lineTo(
-        W/2,
-        H/2+5
-    );
-
-    ctx.stroke();
-}
-
-
-/* =========================================================
-   ИГРОВОЙ ЦИКЛ
-========================================================= */
-
-let previous=
-    performance.now();
-
-
-function update(){
-
-    const now=
-        performance.now();
-
-    const dt=
-        Math.min(
-            .05,
-            (now-previous)/1000
+        character.scale.set(
+            1.15,
+            1.15,
+            1.15
         );
 
-    previous=now;
+        character.traverse(
+            o=>{
 
+                if(o.isMesh){
 
-    let x=
-        joyX;
+                    o.castShadow=true;
 
-    let y=
-        -joyY;
+                    o.receiveShadow=true;
 
+                    if(o.material){
 
-    const length=
-        Math.hypot(x,y);
+                        o.material.roughness=.78;
+
+                        o.material.metalness=.02;
+
+                    }
+
+                }
+
+            }
+        );
+
+        player.add(character);
+
+        if(gltf.animations.length){
+
+            mixer =
+                new THREE.AnimationMixer(
+                    character
+                );
+
+            const animations =
+                gltf.animations;
+
+            const idle =
+                animations.find(
+                    a =>
+                    /idle/i.test(a.name)
+                )
+                ||
+                animations[0];
+
+            const walk =
+                animations.find(
+                    a =>
+                    /walk/i.test(a.name)
+                )
+                ||
+                animations[1]
+                ||
+                animations[0];
+
+            const run =
+                animations.find(
+                    a =>
+                    /run/i.test(a.name)
+                )
+                ||
+                walk;
+
+            idleAction =
+                mixer.clipAction(idle);
+
+            walkAction =
+                mixer.clipAction(walk);
+
+            runAction =
+                mixer.clipAction(run);
+
+            setAction(
+                idleAction
+            );
+
+        }
+
+        loadingProgress.style.width =
+            "100%";
+
+        setTimeout(
+            ()=>{
+                loading.style.display="none";
+            },
+            350
+        );
+
+    },
+
+    xhr=>{
+
+        if(xhr.total){
+
+            const p =
+                xhr.loaded/
+                xhr.total*
+                100;
+
+            loadingProgress.style.width =
+                p+"%";
+
+        }
+
+    },
+
+    error=>{
+
+        console.warn(
+            "Character load error",
+            error
+        );
+
+        loadingProgress.style.width =
+            "100%";
+
+        loading.style.display="none";
+
+    }
+
+);
+
+/* =========================================================
+   УПРАВЛЕНИЕ
+========================================================= */
+
+let joystickX=0;
+
+let joystickY=0;
+
+let joystickActive=false;
+
+const joystick =
+    document.getElementById(
+        "joystick"
+    );
+
+const knob =
+    document.getElementById(
+        "joystickKnob"
+    );
+
+const joystickRadius =
+    48;
+
+function updateJoystick(
+    clientX,
+    clientY
+){
+
+    const rect =
+        joystick.getBoundingClientRect();
+
+    const cx =
+        rect.left+
+        rect.width/2;
+
+    const cy =
+        rect.top+
+        rect.height/2;
+
+    let dx =
+        clientX-cx;
+
+    let dy =
+        clientY-cy;
+
+    const dist =
+        Math.sqrt(
+            dx*dx+
+            dy*dy
+        );
+
+    if(dist>joystickRadius){
+
+        dx =
+            dx/dist*
+            joystickRadius;
+
+        dy =
+            dy/dist*
+            joystickRadius;
+
+    }
+
+    joystickX =
+        dx/
+        joystickRadius;
+
+    joystickY =
+        dy/
+        joystickRadius;
+
+    knob.style.transform =
+        `translate(${dx}px,${dy}px)`;
+
+}
+
+function resetJoystick(){
+
+    joystickX=0;
+
+    joystickY=0;
+
+    joystickActive=false;
+
+    knob.style.transform =
+        "translate(0,0)";
+
+}
+
+joystick.addEventListener(
+    "pointerdown",
+    e=>{
+
+        joystickActive=true;
+
+        joystick.setPointerCapture(
+            e.pointerId
+        );
+
+        updateJoystick(
+            e.clientX,
+            e.clientY
+        );
+
+    }
+);
+
+joystick.addEventListener(
+    "pointermove",
+    e=>{
+
+        if(!joystickActive)
+            return;
+
+        updateJoystick(
+            e.clientX,
+            e.clientY
+        );
+
+    }
+);
+
+joystick.addEventListener(
+    "pointerup",
+    resetJoystick
+);
+
+joystick.addEventListener(
+    "pointercancel",
+    resetJoystick
+);
+
+/* =========================================================
+   КЛАВИАТУРА
+========================================================= */
+
+const keys={};
+
+window.addEventListener(
+    "keydown",
+    e=>{
+        keys[e.code]=true;
+    }
+);
+
+window.addEventListener(
+    "keyup",
+    e=>{
+        keys[e.code]=false;
+    }
+);
+
+/* =========================================================
+   ПРЫЖОК
+========================================================= */
+
+let verticalVelocity=0;
+
+let grounded=true;
+
+const jumpButton =
+    document.getElementById(
+        "jump"
+    );
+
+function jump(){
+
+    if(!grounded)
+        return;
+
+    verticalVelocity =
+        JUMP_POWER;
+
+    grounded=false;
+
+}
+
+jumpButton.addEventListener(
+    "pointerdown",
+    jump
+);
+
+window.addEventListener(
+    "keydown",
+    e=>{
+
+        if(
+            e.code==="Space"
+        ){
+
+            jump();
+
+        }
+
+    }
+);
+
+/* =========================================================
+   КАМЕРА
+========================================================= */
+
+let cameraYaw=0;
+
+let cameraPitch=.28;
+
+let cameraDistance=7;
+
+let cameraTouching=false;
+
+let cameraLastX=0;
+
+let cameraLastY=0;
+
+function isControlElement(
+    target
+){
+
+    return (
+        target===joystick ||
+        joystick.contains(target) ||
+        target===jumpButton
+    );
+
+}
+
+renderer.domElement.addEventListener(
+    "pointerdown",
+    e=>{
+
+        if(
+            isControlElement(e.target)
+        )
+            return;
+
+        cameraTouching=true;
+
+        cameraLastX=
+            e.clientX;
+
+        cameraLastY=
+            e.clientY;
+
+    }
+);
+
+renderer.domElement.addEventListener(
+    "pointermove",
+    e=>{
+
+        if(!cameraTouching)
+            return;
+
+        const dx =
+            e.clientX-
+            cameraLastX;
+
+        const dy =
+            e.clientY-
+            cameraLastY;
+
+        cameraLastX=
+            e.clientX;
+
+        cameraLastY=
+            e.clientY;
+
+        cameraYaw -=
+            dx*.006;
+
+        cameraPitch -=
+            dy*.004;
+
+        cameraPitch =
+            THREE.MathUtils.clamp(
+                cameraPitch,
+                -.1,
+                .85
+            );
+
+    }
+);
+
+renderer.domElement.addEventListener(
+    "pointerup",
+    ()=>{
+        cameraTouching=false;
+    }
+);
+
+renderer.domElement.addEventListener(
+    "pointercancel",
+    ()=>{
+        cameraTouching=false;
+    }
+);
+
+/* =========================================================
+   КОЛЛИЗИИ
+========================================================= */
+
+function collides(
+    x,
+    z
+){
+
+    for(
+        const b of buildingColliders
+    ){
+
+        if(
+            x >
+            b.minX-COLLISION_PADDING &&
+            x <
+            b.maxX+COLLISION_PADDING &&
+            z >
+            b.minZ-COLLISION_PADDING &&
+            z <
+            b.maxZ+COLLISION_PADDING
+        ){
+
+            return true;
+
+        }
+
+    }
+
+    return false;
+
+}
+
+function movePlayer(
+    dx,
+    dz
+){
+
+    let nx =
+        player.position.x+
+        dx;
+
+    let nz =
+        player.position.z+
+        dz;
+
+    nx =
+        THREE.MathUtils.clamp(
+            nx,
+            -WORLD_LIMIT,
+            WORLD_LIMIT
+        );
+
+    nz =
+        THREE.MathUtils.clamp(
+            nz,
+            -WORLD_LIMIT,
+            WORLD_LIMIT
+        );
+
+    /* движение по X */
+
+    if(
+        !collides(
+            nx,
+            player.position.z
+        )
+    ){
+
+        player.position.x=
+            nx;
+
+    }
+
+    /* движение по Z */
+
+    if(
+        !collides(
+            player.position.x,
+            nz
+        )
+    ){
+
+        player.position.z=
+            nz;
+
+    }
+
+}
+
+/* =========================================================
+   ОСНОВНОЙ ЦИКЛ
+========================================================= */
+
+const clock =
+    new THREE.Clock();
+
+function animate(){
+
+    requestAnimationFrame(
+        animate
+    );
+
+    const delta =
+        Math.min(
+            clock.getDelta(),
+            .05
+        );
+
+    if(mixer){
+
+        mixer.update(delta);
+
+    }
+
+    /* движение */
+
+    let forward =
+        -joystickY;
+
+    let side =
+        joystickX;
+
+    if(keys["KeyW"] || keys["ArrowUp"])
+        forward += 1;
+
+    if(keys["KeyS"] || keys["ArrowDown"])
+        forward -= 1;
+
+    if(keys["KeyA"] || keys["ArrowLeft"])
+        side -= 1;
+
+    if(keys["KeyD"] || keys["ArrowRight"])
+        side += 1;
+
+    const length =
+        Math.sqrt(
+            forward*forward+
+            side*side
+        );
 
     if(length>1){
 
-        x/=length;
-        y/=length;
+        forward/=length;
+
+        side/=length;
+
     }
 
+    const moving =
+        length>.08;
 
-    const speed=
-        running
-        ? 4.7
-        : 2.7;
+    const running =
+        keys["ShiftLeft"] ||
+        keys["ShiftRight"];
 
+    const speed =
+        PLAYER_SPEED*
+        (running
+            ? RUN_MULTIPLIER
+            : 1);
 
-    const moveX=
-        (
-            Math.cos(
-                player.angle
-            )*x+
-            Math.cos(
-                player.angle+
-                Math.PI/2
-            )*y
-        )*
-        speed*
-        dt;
+    /* направление относительно камеры */
 
+    const sin =
+        Math.sin(cameraYaw);
 
-    const moveY=
-        (
-            Math.sin(
-                player.angle
-            )*x+
-            Math.sin(
-                player.angle+
-                Math.PI/2
-            )*y
-        )*
-        speed*
-        dt;
+    const cos =
+        Math.cos(cameraYaw);
 
+    const moveX =
+        sin*forward+
+        cos*side;
 
-    const nx=
-        player.x+
-        moveX;
+    const moveZ =
+        cos*forward-
+        sin*side;
 
-    const ny=
-        player.y+
-        moveY;
+    if(moving){
 
+        movePlayer(
+            moveX*
+            speed*
+            delta,
 
-    if(canMove(nx,player.y))
-        player.x=nx;
+            moveZ*
+            speed*
+            delta
+        );
 
-    if(canMove(player.x,ny))
-        player.y=ny;
+        const targetRotation =
+            Math.atan2(
+                moveX,
+                moveZ
+            );
 
+        let diff =
+            targetRotation-
+            player.rotation.y;
 
-    /* прыжок */
+        diff =
+            Math.atan2(
+                Math.sin(diff),
+                Math.cos(diff)
+            );
 
-    if(!player.grounded){
+        player.rotation.y +=
+            diff*
+            Math.min(
+                1,
+                delta*10
+            );
 
-        player.jump+=
-            player.jumpVelocity*
-            dt;
+        if(
+            mixer &&
+            walkAction &&
+            runAction
+        ){
 
-        player.jumpVelocity-=
-            15*
-            dt;
+            if(running)
+                setAction(runAction);
+            else
+                setAction(walkAction);
 
-        if(player.jump<=0){
-
-            player.jump=0;
-
-            player.jumpVelocity=0;
-
-            player.grounded=true;
         }
+
+    }else{
+
+        if(
+            mixer &&
+            idleAction
+        ){
+
+            setAction(
+                idleAction
+            );
+
+        }
+
     }
-}
 
+    /* =====================================================
+       ПРЫЖОК / ГРАВИТАЦИЯ
+    ===================================================== */
 
-function render(){
+    verticalVelocity +=
+        GRAVITY*
+        delta;
 
-    drawSky();
+    player.position.y +=
+        verticalVelocity*
+        delta;
 
-    drawWalls();
+    if(
+        player.position.y<=0
+    ){
 
-    drawRoadDetails();
+        player.position.y=0;
 
-    drawWindows();
+        verticalVelocity=0;
 
-    drawTrees();
+        grounded=true;
 
-    drawCars();
+    }
 
-    drawPlayer();
+    /* =====================================================
+       КАМЕРА
+    ===================================================== */
 
-    drawCrosshair();
-}
+    const target =
+        new THREE.Vector3(
+            player.position.x,
+            player.position.y+2.0,
+            player.position.z
+        );
 
+    const horizontal =
+        cameraDistance*
+        Math.cos(
+            cameraPitch
+        );
 
-function loop(){
+    const camX =
+        target.x-
+        Math.sin(cameraYaw)*
+        horizontal;
 
-    update();
+    const camZ =
+        target.z-
+        Math.cos(cameraYaw)*
+        horizontal;
 
-    render();
+    const camY =
+        target.y+
+        cameraDistance*
+        Math.sin(
+            cameraPitch
+        );
 
-    requestAnimationFrame(
-        loop
+    const desired =
+        new THREE.Vector3(
+            camX,
+            camY,
+            camZ
+        );
+
+    camera.position.lerp(
+        desired,
+        1-
+        Math.pow(
+            .001,
+            delta
+        )
     );
+
+    camera.lookAt(
+        target
+    );
+
+    renderer.render(
+        scene,
+        camera
+    );
+
 }
 
-loop();
+animate();
+
+/* =========================================================
+   RESIZE
+========================================================= */
+
+window.addEventListener(
+    "resize",
+    ()=>{
+        
+        camera.aspect =
+            innerWidth/
+            innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setPixelRatio(
+            Math.min(
+                window.devicePixelRatio || 1,
+                1.5
+            )
+        );
+
+        renderer.setSize(
+            innerWidth,
+            innerHeight,
+            false
+        );
+
+    }
+);
+
+/* =========================================================
+   LANDSCAPE
+========================================================= */
+
+function updateOrientation(){
+
+    if(
+        innerHeight >
+        innerWidth
+    ){
+
+        hint.textContent =
+            "Поверните телефон горизонтально";
+
+    }else{
+
+        hint.textContent =
+            "Свайп справа — камера";
+
+    }
+
+}
+
+window.addEventListener(
+    "resize",
+    updateOrientation
+);
+
+updateOrientation();
 
 </script>
 
