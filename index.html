@@ -102,25 +102,6 @@ canvas{
 /* =========================
    КРУГ КАМЕРЫ
 ========================= */
-#camera{
-    position:absolute;
-    right:max(20px,env(safe-area-inset-right));
-    bottom:max(20px,env(safe-area-inset-bottom));
-    width:150px;
-    height:150px;
-    border-radius:50%;
-    background:rgba(0,0,0,.10);
-    border:1px solid rgba(255,255,255,.22);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    color:rgba(255,255,255,.65);
-    font-size:11px;
-    pointer-events:none;
-    user-select:none;
-    z-index:6;
-}
 /* =========================
    КНОПКА ПРЫЖКА
 ========================= */
@@ -251,9 +232,7 @@ window.addEventListener(
         ПРЫЖОК
     </div>
     <!-- Визуальный круг камеры -->
-    <div id="camera">
-        СВАЙП<br>КАМЕРОЙ
-    </div>
+ 
 </div>
 <script type="importmap">
 {
