@@ -1326,69 +1326,130 @@ window.addEventListener(
     }
 );
 /* =====================================================
-   КАМЕРА
+   КАМЕРА — СВОБОДНЫЙ СВАЙП ПО ЭКРАНУ
 ===================================================== */
-let yaw=0;
-let pitch=.42;
-let distance=7;
+let yaw = 0;
+let pitch = .42;
+let distance = 7;
+let cameraDragging = false;
+let cameraLastX = 0;
+let cameraLastY = 0;
 /*
-   ВАЖНО:
-   Теперь камера управляется
-   не кругом, а всей правой
-   частью экрана.
+   Элементы, на которых свайп камеры
+   начинаться НЕ должен.
 */
-const cameraArea =
-    document.getElementById(
-        "cameraArea"
+const movementButtons = [
+    document.getElementById("forward"),
+    document.getElementById("back"),
+    document.getElementById("left"),
+    document.getElementById("right"),
+    document.getElementById("jump")
+];
+/*
+   Проверяем, является ли касание
+   кнопкой управления.
+*/
+function isControlElement(target){
+    if(!target)
+        return false;
+    return movementButtons.some(
+        button =>
+            button &&
+            (
+                target === button ||
+                button.contains(target)
+            )
     );
-let dragging=false;
-let lastX=0;
-let lastY=0;
-cameraArea.addEventListener(
+}
+/*
+   НАЖАТИЕ ПАЛЬЦЕМ
+*/
+window.addEventListener(
     "pointerdown",
-    e=>{
-        e.preventDefault();
-        dragging=true;
-        lastX=e.clientX;
-        lastY=e.clientY;
-        cameraArea.setPointerCapture(
-            e.pointerId
-        );
+    e => {
+        /*
+           Если нажали кнопку —
+           камерой не управляем.
+        */
+        if(isControlElement(e.target))
+            return;
+        /*
+           Камера начинается
+           с любого места экрана.
+        */
+        cameraDragging = true;
+        cameraLastX = e.clientX;
+        cameraLastY = e.clientY;
+    },
+    {
+        passive:false
     }
 );
-cameraArea.addEventListener(
+/*
+   ДВИЖЕНИЕ ПАЛЬЦА
+*/
+window.addEventListener(
     "pointermove",
-    e=>{
-        if(!dragging)
+    e => {
+        if(!cameraDragging)
             return;
         const dx =
-            e.clientX-lastX;
+            e.clientX - cameraLastX;
         const dy =
-            e.clientY-lastY;
+            e.clientY - cameraLastY;
+        /*
+           Горизонтальное движение
+           вращает камеру вокруг персонажа.
+        */
         yaw -=
-            dx*.008;
+            dx * .008;
+        /*
+           Вертикальное движение
+           поднимает / опускает камеру.
+        */
         pitch +=
-            dy*.006;
+            dy * .006;
         pitch =
             THREE.MathUtils.clamp(
                 pitch,
                 .14,
                 1.05
             );
-        lastX=e.clientX;
-        lastY=e.clientY;
+        cameraLastX =
+            e.clientX;
+        cameraLastY =
+            e.clientY;
+    },
+    {
+        passive:false
     }
 );
-cameraArea.addEventListener(
+/*
+   ОТПУСКАНИЕ ПАЛЬЦА
+*/
+window.addEventListener(
     "pointerup",
-    ()=>{
-        dragging=false;
+    () => {
+        cameraDragging = false;
     }
 );
-cameraArea.addEventListener(
+/*
+   ЕСЛИ БРАУЗЕР ОТМЕНИЛ КАСАНИЕ
+*/
+window.addEventListener(
     "pointercancel",
-    ()=>{
-        dragging=false;
+    () => {
+        cameraDragging = false;
+    }
+);
+/*
+   Если палец ушёл за пределы окна —
+   прекращаем вращение.
+*/
+window.addEventListener(
+    "blur",
+    () => {
+        cameraDragging = false;
     }
 );
 /* =====================================================
