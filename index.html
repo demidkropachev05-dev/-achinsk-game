@@ -1294,20 +1294,19 @@ window.addEventListener(
         )
             controls.right=false;
     }
-);
-/* =====================================================
-   КАМЕРА — СВОБОДНЫЙ СВАЙП ПО ЭКРАНУ
+);/* =====================================================
+   КАМЕРА — СВОБОДНЫЙ СВАЙП ПО ВСЕМУ ЭКРАНУ
 ===================================================== */
+
 let yaw = 0;
 let pitch = .42;
 let distance = 7;
-let cameraDragging = false;
+
+let cameraPointerId = null;
 let cameraLastX = 0;
 let cameraLastY = 0;
-/*
-   Элементы, на которых свайп камеры
-   начинаться НЕ должен.
-*/
+
+/* Кнопки, на которых камера НЕ должна вращаться */
 const movementButtons = [
     document.getElementById("forward"),
     document.getElementById("back"),
@@ -1315,13 +1314,12 @@ const movementButtons = [
     document.getElementById("right"),
     document.getElementById("jump")
 ];
-/*
-   Проверяем, является ли касание
-   кнопкой управления.
-*/
+
+/* Проверяем, нажата ли кнопка управления */
 function isControlElement(target){
     if(!target)
         return false;
+
     return movementButtons.some(
         button =>
             button &&
@@ -1331,95 +1329,121 @@ function isControlElement(target){
             )
     );
 }
-/*
-   НАЖАТИЕ ПАЛЬЦЕМ
-*/
-window.addEventListener(
+
+/* =====================================================
+   НАЧАЛО СВАЙПА
+===================================================== */
+
+document.addEventListener(
     "pointerdown",
     e => {
-        /*
-           Если нажали кнопку —
-           камерой не управляем.
-        */
+
+        /* Если нажали кнопку — камеру не вращаем */
         if(isControlElement(e.target))
             return;
-        /*
-           Камера начинается
-           с любого места экрана.
-        */
-        cameraDragging = true;
+
+        /* Запоминаем именно этот палец */
+        cameraPointerId = e.pointerId;
+
         cameraLastX = e.clientX;
         cameraLastY = e.clientY;
+
+        e.preventDefault();
     },
     {
-        passive:false
+        passive:false,
+        capture:true
     }
 );
-/*
-   ДВИЖЕНИЕ ПАЛЬЦА
-*/
-window.addEventListener(
+
+/* =====================================================
+   СВАЙП
+===================================================== */
+
+document.addEventListener(
     "pointermove",
     e => {
-        if(!cameraDragging)
+
+        /* Работаем только с пальцем,
+           который начал вращение */
+        if(e.pointerId !== cameraPointerId)
             return;
+
         const dx =
             e.clientX - cameraLastX;
+
         const dy =
             e.clientY - cameraLastY;
-        /*
-           Горизонтальное движение
-           вращает камеру вокруг персонажа.
-        */
-        yaw -=
-            dx * .008;
-        /*
-           Вертикальное движение
-           поднимает / опускает камеру.
-        */
-        pitch +=
-            dy * .006;
+
+        /* Вращение влево / вправо */
+        yaw -= dx * .008;
+
+        /* Наклон вверх / вниз */
+        pitch += dy * .006;
+
+        /* Ограничиваем наклон камеры */
         pitch =
             THREE.MathUtils.clamp(
                 pitch,
                 .14,
                 1.05
             );
-        cameraLastX =
-            e.clientX;
-        cameraLastY =
-            e.clientY;
+
+        cameraLastX = e.clientX;
+        cameraLastY = e.clientY;
+
+        e.preventDefault();
     },
     {
-        passive:false
+        passive:false,
+        capture:true
     }
 );
-/*
+
+/* =====================================================
    ОТПУСКАНИЕ ПАЛЬЦА
-*/
-window.addEventListener(
+===================================================== */
+
+document.addEventListener(
     "pointerup",
-    () => {
-        cameraDragging = false;
+    e => {
+
+        if(e.pointerId === cameraPointerId){
+            cameraPointerId = null;
+        }
+
+    },
+    {
+        capture:true
     }
 );
-/*
-   ЕСЛИ БРАУЗЕР ОТМЕНИЛ КАСАНИЕ
-*/
-window.addEventListener(
+
+/* =====================================================
+   ОТМЕНА КАСАНИЯ
+===================================================== */
+
+document.addEventListener(
     "pointercancel",
-    () => {
-        cameraDragging = false;
+    e => {
+
+        if(e.pointerId === cameraPointerId){
+            cameraPointerId = null;
+        }
+
+    },
+    {
+        capture:true
     }
 );
-/*
-   Если палец ушёл за пределы окна —
-   прекращаем вращение.
-*/
+
+/* =====================================================
+   ЕСЛИ ПАЛЕЦ УШЁЛ ЗА ПРЕДЕЛЫ ОКНА
+===================================================== */
+
 window.addEventListener(
     "blur",
     () => {
-        cameraDragging = false;
+        cameraPointerId = null;
     }
 );
 /* =====================================================
