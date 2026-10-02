@@ -1,10 +1,15 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+
 <meta charset="UTF-8">
 
 <meta name="viewport"
-content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+content="width=device-width,
+initial-scale=1,
+maximum-scale=1,
+user-scalable=no,
+viewport-fit=cover">
 
 <title>Ачинск 3D</title>
 
@@ -16,7 +21,8 @@ content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,vie
     user-select:none;
 }
 
-html,body{
+html,
+body{
     margin:0;
     width:100%;
     height:100%;
@@ -39,17 +45,16 @@ canvas{
     height:100%;
 }
 
-
-/* =====================================================
-   ПОДСКАЗКА ПОВОРОТА
-===================================================== */
+/* =========================
+   ПОДСКАЗКА
+========================= */
 
 #landscapeHint{
     position:fixed;
     left:50%;
     top:50%;
     transform:translate(-50%,-50%);
-    z-index:30;
+    z-index:50;
 
     padding:14px 20px;
 
@@ -76,13 +81,11 @@ canvas{
 
 }
 
-
-/* =====================================================
-   ВЕРХНЯЯ НАДПИСЬ
-===================================================== */
+/* =========================
+   ВЕРХ
+========================= */
 
 #topInfo{
-
     position:fixed;
 
     left:50%;
@@ -90,7 +93,7 @@ canvas{
 
     transform:translateX(-50%);
 
-    z-index:10;
+    z-index:20;
 
     padding:7px 13px;
 
@@ -107,10 +110,9 @@ canvas{
     pointer-events:none;
 }
 
-
-/* =====================================================
+/* =========================
    ДЖОЙСТИК
-===================================================== */
+========================= */
 
 #joystick{
 
@@ -133,7 +135,7 @@ canvas{
         inset 0 0 25px rgba(0,0,0,.35),
         0 5px 20px rgba(0,0,0,.25);
 
-    z-index:20;
+    z-index:30;
 
     touch-action:none;
 }
@@ -156,7 +158,6 @@ canvas{
 
     background:rgba(255,255,255,.2);
 }
-
 
 #stick{
 
@@ -182,13 +183,11 @@ canvas{
         0 4px 15px rgba(0,0,0,.3);
 
     pointer-events:none;
-
 }
 
-
-/* =====================================================
+/* =========================
    ПРЫЖОК
-===================================================== */
+========================= */
 
 #jump{
 
@@ -211,7 +210,7 @@ canvas{
 
     font-size:28px;
 
-    z-index:20;
+    z-index:30;
 
     display:flex;
 
@@ -225,16 +224,12 @@ canvas{
 }
 
 #jump:active{
-
     transform:scale(.92);
-
-    background:rgba(255,255,255,.22);
 }
 
-
-/* =====================================================
-   RUN
-===================================================== */
+/* =========================
+   БЕГ
+========================= */
 
 #speedButton{
 
@@ -265,7 +260,7 @@ canvas{
 
     font-weight:bold;
 
-    z-index:20;
+    z-index:30;
 
     touch-action:none;
 }
@@ -277,34 +272,28 @@ canvas{
     border-color:rgba(255,210,100,.6);
 }
 
-
 @media(max-width:700px){
 
     #joystick{
-
         width:138px;
         height:138px;
-
     }
 
     #stick{
-
         width:62px;
         height:62px;
 
         margin-left:-31px;
         margin-top:-31px;
-
     }
 
 }
 
 </style>
+
 </head>
 
-
 <body>
-
 
 <div id="game"></div>
 
@@ -383,7 +372,7 @@ new THREE.PerspectiveCamera(
     65,
     window.innerWidth /
     window.innerHeight,
-    .1,
+    0.1,
     1800
 );
 
@@ -395,7 +384,7 @@ camera.position.set(
 
 
 /* =====================================================
-   РЕНДЕР
+   RENDERER
 ===================================================== */
 
 const renderer =
@@ -410,7 +399,7 @@ new THREE.WebGLRenderer({
 
 renderer.setPixelRatio(
     Math.min(
-        window.devicePixelRatio,
+        window.devicePixelRatio || 1,
         1.5
     )
 );
@@ -486,41 +475,26 @@ scene.add(sun);
 
 const groundMat =
 new THREE.MeshStandardMaterial({
-
     color:0x555b58,
-
     roughness:1
-
 });
-
 
 const roadMat =
 new THREE.MeshStandardMaterial({
-
     color:0x24272a,
-
     roughness:.96
-
 });
-
 
 const sidewalkMat =
 new THREE.MeshStandardMaterial({
-
     color:0x777979,
-
     roughness:.95
-
 });
-
 
 const whiteMat =
 new THREE.MeshStandardMaterial({
-
     color:0xdad9d1,
-
     roughness:.8
-
 });
 
 
@@ -549,11 +523,10 @@ scene.add(ground);
 
 
 /* =====================================================
-   СТОЛКНОВЕНИЯ
+   COLLIDERS
 ===================================================== */
 
 const colliders=[];
-
 
 function addCollider(
     x,
@@ -650,7 +623,8 @@ function createRoad(
 
         scene.add(s2);
 
-    }else{
+    }
+    else{
 
         const s1 =
         new THREE.Mesh(
@@ -923,27 +897,21 @@ function createBuilding(
     const floors=
     Math.max(
         1,
-        Math.floor(
-            height/4
-        )
+        Math.floor(height/4)
     );
 
 
     const colsX=
     Math.max(
         1,
-        Math.floor(
-            width/4
-        )
+        Math.floor(width/4)
     );
 
 
     const colsZ=
     Math.max(
         1,
-        Math.floor(
-            depth/4
-        )
+        Math.floor(depth/4)
     );
 
 
@@ -1631,7 +1599,8 @@ for(
 
         );
 
-    }else{
+    }
+    else{
 
         createCar(
 
@@ -1668,61 +1637,6 @@ player.position.set(
 
 
 let playerModel=null;
-
-
-const loader=
-new GLTFLoader();
-
-
-loader.load(
-
-    "https://raw.githubusercontent.com/MMWilliams/char-kit/master/characters/mh_3183.glb",
-
-    gltf=>{
-
-        playerModel=
-        gltf.scene;
-
-
-        playerModel.scale.set(
-            1.9,
-            1.9,
-            1.9
-        );
-
-
-        playerModel.traverse(
-            object=>{
-
-                if(
-                    object.isMesh
-                ){
-
-                    object.castShadow=true;
-
-                    object.receiveShadow=true;
-
-                }
-
-            }
-        );
-
-
-        player.add(
-            playerModel
-        );
-
-    },
-
-    undefined,
-
-    ()=>{
-
-        createFallbackPlayer();
-
-    }
-
-);
 
 
 function createFallbackPlayer(){
@@ -1780,6 +1694,75 @@ function createFallbackPlayer(){
     player.add(head);
 
 }
+
+
+/*
+   Резервный персонаж создаётся сразу.
+   Поэтому игра не зависит от загрузки GLB.
+*/
+
+createFallbackPlayer();
+
+
+/*
+   Пытаемся загрузить более детальную модель.
+   Если она загрузится — заменяем резервную.
+*/
+
+const loader=
+new GLTFLoader();
+
+loader.load(
+
+    "https://raw.githubusercontent.com/MMWilliams/char-kit/master/characters/mh_3183.glb",
+
+    gltf=>{
+
+        player.remove(
+            ...player.children
+        );
+
+        playerModel=
+        gltf.scene;
+
+        playerModel.scale.set(
+            1.9,
+            1.9,
+            1.9
+        );
+
+        playerModel.traverse(
+            object=>{
+
+                if(
+                    object.isMesh
+                ){
+
+                    object.castShadow=true;
+
+                    object.receiveShadow=true;
+
+                }
+
+            }
+        );
+
+        player.add(
+            playerModel
+        );
+
+    },
+
+    undefined,
+
+    ()=>{
+        /*
+           Если модель не загрузилась,
+           резервный персонаж уже работает.
+        */
+    }
+
+);
 
 
 /* =====================================================
@@ -1845,8 +1828,6 @@ function movePlayer(
     dz;
 
 
-    /* X */
-
     if(
         !collidesAt(
             nextX,
@@ -1859,8 +1840,6 @@ function movePlayer(
 
     }
 
-
-    /* Z */
 
     if(
         !collidesAt(
@@ -1952,9 +1931,9 @@ function updateJoystick(
 
 
     const distance=
-    Math.sqrt(
-        dx*dx+
-        dy*dy
+    Math.hypot(
+        dx,
+        dy
     );
 
 
@@ -1974,14 +1953,21 @@ function updateJoystick(
     }
 
 
-    joystickX=
-    dx/
-    JOYSTICK_RADIUS;
+    /*
+       X:
+       вправо = +1
+       влево = -1
 
+       Y:
+       вверх = -1
+       вниз = +1
+    */
+
+    joystickX=
+    dx/JOYSTICK_RADIUS;
 
     joystickY=
-    dy/
-    JOYSTICK_RADIUS;
+    dy/JOYSTICK_RADIUS;
 
 
     stick.style.transform=
@@ -2042,9 +2028,7 @@ joystick.addEventListener(
             return;
         }
 
-
         event.preventDefault();
-
 
         updateJoystick(
             event.clientX,
@@ -2060,7 +2044,7 @@ joystick.addEventListener(
     event=>{
 
         if(
-            event.pointerId===
+            event.pointerId ===
             joystickPointerId
         ){
 
@@ -2074,7 +2058,18 @@ joystick.addEventListener(
 
 joystick.addEventListener(
     "pointercancel",
-    resetJoystick
+    event=>{
+
+        if(
+            event.pointerId ===
+            joystickPointerId
+        ){
+
+            resetJoystick();
+
+        }
+
+    }
 );
 
 
@@ -2086,7 +2081,6 @@ const speedButton=
 document.getElementById(
     "speedButton"
 );
-
 
 let running=false;
 
@@ -2190,34 +2184,44 @@ let lastTouchX=0;
 let lastTouchY=0;
 
 
+function isControlElement(
+    element
+){
+
+    return (
+
+        element===joystick ||
+
+        element===stick ||
+
+        element===jump ||
+
+        element===speedButton ||
+
+        joystick.contains(element) ||
+
+        jump.contains(element) ||
+
+        speedButton.contains(element)
+
+    );
+
+}
+
+
 renderer.domElement.addEventListener(
     "pointerdown",
     event=>{
 
         if(
-
-            event.target===
-            joystick ||
-
-            event.target===
-            stick ||
-
-            event.target===
-            jump ||
-
-            event.target===
-            speedButton
-
+            isControlElement(event.target)
         ){
-
             return;
-
         }
 
 
         cameraTouchId=
         event.pointerId;
-
 
         lastTouchX=
         event.clientX;
@@ -2252,7 +2256,6 @@ renderer.domElement.addEventListener(
         event.clientX-
         lastTouchX;
 
-
         const dy=
         event.clientY-
         lastTouchY;
@@ -2267,7 +2270,6 @@ renderer.domElement.addEventListener(
 
         cameraYaw -=
         dx*.006;
-
 
         cameraPitch -=
         dy*.004;
@@ -2331,7 +2333,6 @@ window.addEventListener(
 
         keys[event.code]=true;
 
-
         if(
             event.code==="Space"
         ){
@@ -2355,7 +2356,7 @@ window.addEventListener(
 
 
 /* =====================================================
-   ДВИЖЕНИЕ ПЕРСОНАЖА
+   ДВИЖЕНИЕ
 ===================================================== */
 
 const clock=
@@ -2368,125 +2369,118 @@ function updatePlayer(
 
     /*
     ======================================================
-    САМАЯ ВАЖНАЯ ЧАСТЬ УПРАВЛЕНИЯ
+    ПОЛНОСТЬЮ НОВАЯ СИСТЕМА ДВИЖЕНИЯ
 
-    joystickY:
+    Джойстик:
 
-    вверх = -1
-    вниз = +1
+    X:
+    -1 = влево
+     0 = центр
+    +1 = вправо
+
+    Y:
+    -1 = вверх
+    +1 = вниз
 
     Поэтому:
+
     forward = -joystickY
 
-    joystickX:
-
-    вправо = +1
-    влево = -1
-
-    НО в нашей системе координат Three.js
-    боковое направление камеры получается
-    с обратным знаком.
-
-    Поэтому:
-
-    side = -joystickX
-
-    Это исправляет диагонали.
+    Никакого старого side.
     ======================================================
     */
 
+    let inputX=
+    joystickX;
 
-    let forward =
+    let inputY=
     -joystickY;
 
-let side =
-    -joystickX;
 
-
-/* клавиатура */
-
-if(
-    keys["KeyW"] ||
-    keys["ArrowUp"]
-){
-
-    forward=1;
-
-}
-
-
-if(
-    keys["KeyS"] ||
-    keys["ArrowDown"]
-){
-
-    forward=-1;
-
-}
-
-
-if(
-    keys["KeyA"] ||
-    keys["ArrowLeft"]
-){
-
-    side=1;
-
-}
-
-
-if(
-    keys["KeyD"] ||
-    keys["ArrowRight"]
-){
-
-    side=-1;
-
-}
-
-
-    /*
-    Нормализация.
-
-    Благодаря этому диагональ
-    не становится быстрее.
-    */
-
-    const length=
-    Math.sqrt(
-        forward*forward+
-        side*side
-    );
-
+    /* клавиатура */
 
     if(
-        length>1
+        keys["KeyA"] ||
+        keys["ArrowLeft"]
     ){
 
-        forward /=
-        length;
+        inputX=-1;
 
-        side /=
-        length;
+    }
+
+    if(
+        keys["KeyD"] ||
+        keys["ArrowRight"]
+    ){
+
+        inputX=1;
+
+    }
+
+    if(
+        keys["KeyW"] ||
+        keys["ArrowUp"]
+    ){
+
+        inputY=1;
+
+    }
+
+    if(
+        keys["KeyS"] ||
+        keys["ArrowDown"]
+    ){
+
+        inputY=-1;
 
     }
 
 
-    const speed=
-    PLAYER_SPEED*
-    (
-        running ?
-        RUN_MULTIPLIER :
-        1
+    /*
+    ======================================================
+    НОРМАЛИЗАЦИЯ
+    ======================================================
+    */
+
+    const inputLength=
+    Math.hypot(
+        inputX,
+        inputY
     );
+
+
+    if(
+        inputLength>1
+    ){
+
+        inputX /=
+        inputLength;
+
+        inputY /=
+        inputLength;
+
+    }
 
 
     /*
     ======================================================
-    НАПРАВЛЕНИЕ КАМЕРЫ
+    НАПРАВЛЕНИЯ КАМЕРЫ
+    ======================================================
+
+    Камера находится позади персонажа.
+
+    При cameraYaw = 0:
+
+    вперёд = -Z
+    вправо = +X
+
+    Именно поэтому здесь:
+
+    forwardZ = -cos
+
+    rightX = cos
     ======================================================
     */
-
 
     const sin=
     Math.sin(cameraYaw);
@@ -2495,51 +2489,74 @@ if(
     Math.cos(cameraYaw);
 
 
-    /*
-    Вперёд камеры
-    */
-
     const forwardX=
     sin;
 
     const forwardZ=
-    cos;
+    -cos;
 
-
-    /*
-    Вправо камеры
-
-    Именно здесь учитывается
-    исправленная сторона.
-    */
 
     const rightX=
     cos;
 
     const rightZ=
-    -sin;
+    sin;
 
 
     /*
-    Суммируем:
-
-    движение вперёд +
-    движение вправо
+    ======================================================
+    ИТОГОВОЕ ДВИЖЕНИЕ
+    ======================================================
     */
 
+    let moveX=
+    forwardX*inputY+
+    rightX*inputX;
 
-    const moveX=
-    forwardX*forward+
-    rightX*side;
+
+    let moveZ=
+    forwardZ*inputY+
+    rightZ*inputX;
 
 
-    const moveZ=
-    forwardZ*forward+
-    rightZ*side;
+    /*
+       Дополнительная защита от
+       диагонального ускорения.
+    */
+
+    const moveLength=
+    Math.hypot(
+        moveX,
+        moveZ
+    );
 
 
     if(
-        length>.05
+        moveLength>1
+    ){
+
+        moveX /=
+        moveLength;
+
+        moveZ /=
+        moveLength;
+
+    }
+
+
+    const speed=
+    PLAYER_SPEED*
+    (
+        running
+        ?
+        RUN_MULTIPLIER
+        :
+        1
+    );
+
+
+    if(
+        moveLength>.05
     ){
 
         movePlayer(
@@ -2556,7 +2573,8 @@ if(
 
 
         /*
-        Поворот персонажа
+        Поворачиваем персонажа
+        именно в сторону движения.
         */
 
         const targetRotation=
@@ -2566,12 +2584,17 @@ if(
         );
 
 
+        const model=
+        playerModel ||
+        player.children[0];
+
+
         if(
-            playerModel
+            model
         ){
 
-            const currentRotation=
-            playerModel.rotation.y;
+            let currentRotation=
+            model.rotation.y;
 
 
             let difference=
@@ -2584,7 +2607,7 @@ if(
                 Math.PI
             ){
 
-                difference-=
+                difference -=
                 Math.PI*2;
 
             }
@@ -2595,27 +2618,33 @@ if(
                 -Math.PI
             ){
 
-                difference+=
+                difference +=
                 Math.PI*2;
 
             }
 
 
-            playerModel.rotation.y +=
+            currentRotation +=
             difference*
             Math.min(
                 1,
                 delta*10
             );
 
+
+            model.rotation.y=
+            currentRotation;
+
         }
 
     }
 
 
-    /* =================================================
-       ГРАВИТАЦИЯ
-    ================================================= */
+    /*
+    ======================================================
+    ГРАВИТАЦИЯ
+    ======================================================
+    */
 
     velocityY +=
     GRAVITY*
@@ -2673,6 +2702,13 @@ function updateCamera(){
     )*
     cameraDistance;
 
+
+    /*
+       Камера находится позади игрока.
+
+       Поэтому при yaw 0
+       камера находится на +Z.
+    */
 
     const offsetX=
     Math.sin(
@@ -2743,7 +2779,7 @@ function resize(){
 
     renderer.setPixelRatio(
         Math.min(
-            window.devicePixelRatio,
+            window.devicePixelRatio || 1,
             1.5
         )
     );
@@ -2760,12 +2796,10 @@ window.addEventListener(
 window.addEventListener(
     "orientationchange",
     ()=>{
-
         setTimeout(
             resize,
-            200
+            250
         );
-
     }
 );
 
@@ -2775,6 +2809,8 @@ window.addEventListener(
 ===================================================== */
 
 resize();
+
+updateCamera();
 
 
 function animate(){
